@@ -4,3 +4,7 @@ extension/manifest.json
 extension/dist
 .DS_Store
 .env
+
+*.pem
+
+*.crx
