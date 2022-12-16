@@ -1,5 +1,5 @@
 # Installation
-* Download the [extension .zip] (https://github.com/sheibeck/jira-cloud-versioner/raw/main/dist.zip)
+* Download the [extension .zip] (https://github.com/sheibeck/jcv/blob/main/dist.zip)
 * Unpack this file then open `chrome://extensions/`
 * Choose `Load Unpacked Extension` and targe the directory you unpacked in step #1
 * Navigate to your jira cloud instance
