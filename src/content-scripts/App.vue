@@ -5,105 +5,53 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
-    <div v-if="isAuthenticated">
+    <div v-if="!isBoard">
+      <span>This extension only works on a board!</span>
       <a href="https://dealeron.atlassian.net/jira/people/6150b95207ac3c0068966f97/boards/41?quickFilter=272&quickFilter=271&quickFilter=121">Use This Board!</a>
-      <div class="d-flex">
-        <div class="d-flex flex-grow-1">
-          <div class="h2">Jira Version Manager</div>           
-          <button type="button" class="btn btn-sm btn-secondary m-1" @click="fetchAllVersions()">Refresh</button>
-        </div>
+    </div>
+    <div v-else>
+      <div v-if="isAuthenticated">      
+        <div class="d-flex">
+          <div class="flex-grow-1">
+            <div class="h5">Jira Version Manager</div>            
+            <div class="d-flex">
+              <div class="h4 pt-1">
+                {{boardName}}
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="fetchAllVersions()">
+                <i class="fa-solid fa-arrow-rotate-right"></i>
+              </button>
+            </div>
+          </div>
 
-        <div class="d-flex mr-auto">
-          <div class="px-1">
-            <img class="profile-img" :src="user?.profileImage" />
-          </div>
-          <div class="p-1">
-            <div class="contentsview__user-name">{{ user?.nickName }}</div>
-            <div class="contentsview__user-email">{{ user?.email }}</div>
-          </div>
-          <div class="p-1 mr-4">
-            <button
-              @click="authStore.logout"
-              class="btn btn-sm btn-secondary">
-              Logout
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary m-1" @click="toggleApp()">Close</button>
-          </div>
-        </div>             
-      </div>
-      
-      <div class="row">
-        <div class="col">        
-          <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
-            <div class="h4 border-bottom">
-              {{codebase.Name}}
-            </div>        
-            <draggable 
-              @change="issueListChanged"            
-              v-model="codebase.Issues" 
-              class="border version-drop"
-              group="version"               
-              item-key="Number">
-              <template #item="{element}">
-                <div>                   
-                  <div>
-                    {{ element.Number }}                      
-                    <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                    <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
-                  </div>
-                  <small>{{element.Summary}}</small>
-                </div>
-              </template>
-            </draggable>
-          </div>
+          <div class="d-flex mr-auto">
+            <div class="px-1">
+              <img class="profile-img" :src="user?.profileImage" />
+            </div>
+            <div class="p-1">
+              <div class="contentsview__user-name">{{ user?.nickName }}</div>
+              <div class="contentsview__user-email">{{ user?.email }}</div>
+            </div>
+            <div class="p-1 mr-4">
+              <button
+                @click="authStore.logout"
+                class="btn btn-sm btn-secondary">
+                Logout
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary m-1" @click="toggleApp()">Close</button>
+            </div>
+          </div>             
         </div>
-
-        <div class="col">
-          <div class="row">
-            <div class="col">
-              <span class="h3">Versions</span>
-            </div>
-          </div>
-          <div class="row d-flex border-bottom pb-2 mb-2">
-            <div class="col">
-              <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="new-version-number">#</span>
-                </div>
-                <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="new-version-number">Code</span>
-                </div>
-                <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
-              </div>
-            </div>
-            <div class="col d-flex flex-row-reverse">
-              <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
-                @click="toggleReleasedVersions()">Released</button>
-              <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
-            </div>
-          </div>        
-          <div class="row">
-            <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
-              <div class="h4">
-                {{version.CodeBase}} {{version.Number}}
-                <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number)"></i>
-                <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number)"></i>
-                <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number)"></i>              
-              </div>
-              <div class="col">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
-                  <label class="form-check-label">Released</label>
-                </div>
-              </div>
+        
+        <div class="row">
+          <div class="col">        
+            <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
+              <div class="h4 border-bottom">
+                {{codebase.Name}}
+              </div>        
               <draggable 
-                @change="versionListChanged"              
-                v-model="version.Issues" 
+                @change="issueListChanged"            
+                v-model="codebase.Issues" 
                 class="border version-drop"
                 group="version"               
                 item-key="Number">
@@ -118,24 +66,89 @@
                   </div>
                 </template>
               </draggable>
-                    
             </div>
-          </div>     
+          </div>
+
+          <div class="col">
+            <div class="row">
+              <div class="col">
+                <span class="h3">Versions</span>
+              </div>
+            </div>
+            <div class="row d-flex border-bottom pb-2 mb-2">
+              <div class="col">
+                <div class="input-group input-group-sm">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="new-version-number">#</span>
+                  </div>
+                  <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="input-group input-group-sm">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="new-version-number">Code</span>
+                  </div>
+                  <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
+                </div>
+              </div>
+              <div class="col d-flex flex-row-reverse">
+                <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
+                  title="Hide/show released versions"
+                  @click="toggleReleasedVersions()">Released</button>
+                <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
+              </div>
+            </div>        
+            <div class="row">
+              <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
+                <div class="h4">
+                  {{version.CodeBase}} {{version.Number}}
+                  <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
+                  <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
+                  <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>              
+                </div>
+                <div class="col">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
+                    <label class="form-check-label">Released</label>
+                  </div>
+                </div>
+                <draggable 
+                  @change="versionListChanged"              
+                  v-model="version.Issues" 
+                  class="border version-drop"
+                  group="version"               
+                  item-key="Number">
+                  <template #item="{element}">
+                    <div>                   
+                      <div>
+                        {{ element.Number }}                      
+                        <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
+                        <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
+                      </div>
+                      <small>{{element.Summary}}</small>
+                    </div>
+                  </template>
+                </draggable>
+                      
+              </div>
+            </div>     
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-else class="m-2">
-      <div class="d-flex">
-        <div class="flex-grow-1">          
-          <div class="h2">Jira Version Manager</div>          
+      <div v-else class="m-2">
+        <div class="d-flex">
+          <div class="flex-grow-1">          
+            <div class="h2">Version Manager</div>            
+          </div>
+
+          <GoogleLoginButton 
+            :width="150" 
+            :height="32"
+            @click="authStore.login({ interactive : true})"
+          />
         </div>
-
-        <GoogleLoginButton 
-          :width="150" 
-          :height="32"
-          @click="authStore.login({ interactive : true})"
-        />
       </div>
     </div>
     
@@ -143,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, customRef } from "vue";
+import { onMounted, ref, computed} from "vue";
 import { Component } from "./Component";
 import { CodeBase } from "./CodeBase";
 import { JiraTicket } from "./JiraTicket";
@@ -166,6 +179,8 @@ const versionCodeBase = ref();
 const fireStoreDb = new FireStoreDb();
 const db = new Database("c2c");
 let versions = ref(new Array<Version>());
+let unsubscribeVersions;
+let boardName = ref();
 
 let isVisible = ref(false);
 let showReleasedVersions = ref(false);
@@ -236,19 +251,32 @@ const getVersionListByFilter = function() {
 }
 
 const addVersion = function() {  
-  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value);  
+  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value); 
+  if (version.Number === "")  {
+    sendMessage("You must include a version number");
+    return;
+  }
+
+  if (version.CodeBase === "")  {
+    sendMessage("You must include a code base number");
+    return;
+  }
+
   if (versions.value.findIndex( v => v.Number == version.Number && v.CodeBase == version.CodeBase) > -1) {
     sendMessage("Version already exists for this Codebase");
     return;
   }
+
   versions.value.unshift(version);  
   fireStoreDb.save(version);
+
+  sendMessage(`Version ${version.Number} added ${version.CodeBase}`);
 }
 
-const removeVersion = async(versionNumber) =>{
+const removeVersion = async(versionNumber, codeBase) =>{
   const verifyDelete = window.confirm("Are you sure you want to delete this version?");
   if (verifyDelete) {
-    const v = versions.value.find( v => v.Number === versionNumber);
+    const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase === codeBase);
     if (v) {
       var index = versions.value.indexOf(v);
       if (index > -1) {
@@ -259,11 +287,13 @@ const removeVersion = async(versionNumber) =>{
       await fireStoreDb.delete(v);
     }
     processSwimlanes();
+
+    sendMessage(`Version ${versionNumber} deleted from ${codeBase}`);
   }  
 }
 
-const copyVersionForSlack = function(versionNumber) {
-  const v = versions.value.find( v => v.Number === versionNumber);
+const copyVersionForSlack = function(versionNumber, codeBase) {
+  const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
     let output = `@c2c-integrators\r\n`;
     output += `${v.CodeBase} ${v.Number}\r\n`;
@@ -279,8 +309,8 @@ const copyVersionForSlack = function(versionNumber) {
   }
 }
 
-const copyVersionForExcel = function(versionNumber) {
-  const v = versions.value.find( v => v.Number === versionNumber);
+const copyVersionForExcel = function(versionNumber, codeBase) {
+  const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
     const hasSev = v.Issues.findIndex(i => i.IsSev) > -1;
     let output = `v${v.Number}\t`;                  //A
@@ -347,9 +377,23 @@ const fetchAllVersions = async() => {
   const versionList = await fireStoreDb.fetchAll();
   versions = ref(versionList);
   processSwimlanes();
+
+  sendMessage("Refreshed sub-task list");
 }
 
-let unsubscribeVersions;
+const isBoard = computed(() => {
+  return boardName.value.length > 0;
+});
+
+const fetchBoardName = async() => {  
+  const name = Issue.GetBoardName();
+  if (name) {
+    boardName = ref(name);
+  }
+  else {
+    boardName = ref("");
+  }
+}
 
 onMounted(async () => {
   authStore.login({ interactive: false });
@@ -370,6 +414,8 @@ onMounted(async () => {
     }
   });
 });
+
+fetchBoardName();
 </script>
 
 <style>

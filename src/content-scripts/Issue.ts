@@ -1,7 +1,6 @@
 import { JiraTicket } from "./JiraTicket";
 
 export class Issue {
-
     static GetIssues() : Array<JiraTicket> {          
         const integrationColumnId = document.querySelector("[title='Integrating']")?.getAttribute("data-id");
         const swimLanes = document.querySelectorAll(`[data-column-id="${integrationColumnId}"]`);
@@ -67,4 +66,15 @@ export class Issue {
 
         return issueList;
     }
+
+    static GetBoardName() : String {        
+        const boardNameElem = document.getElementById("ghx-board-name");
+        if (boardNameElem) {
+            return boardNameElem.innerText;            
+        }
+        else {
+            return "";
+        }
+    }
+  
 }
