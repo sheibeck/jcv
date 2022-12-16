@@ -11,15 +11,44 @@ export class Issue {
             const issues = swimLane?.querySelectorAll(".ghx-issue") ?? [];
 
             issues.forEach( (issue) => {   
+                let isPbi = false;                                           
+                let isSev = false;
+                let codeBase = "";  
+                let priorityText = "Default";
+
                 const ticketNumber = issue.getAttribute("data-issue-key");
                 const extraFields = issue.querySelector(".ghx-extra-fields");
-                let isPbi = false;
                 
+                //summary
+                const summary = issue.querySelector(".ghx-summary");
+                const summaryText = summary?.textContent;
+
+                //priority
+                const statFields = issue.querySelector(".ghx-stat-fields");
+                const statRows = statFields?.querySelectorAll(".ghx-row"); 
+                if (statRows) {
+                    //if this isn't a sub-task then skip it. we don't want stories in here, just workable tickets
+                    const taskType = statRows[0].querySelectorAll(".ghx-field")[0];
+                    const taskTypeText =  (taskType?.getAttribute("data-tooltip") ?? "");
+                    if (taskTypeText !== "Sub-task") {
+                        return;
+                    }
+
+                    //fetch the priority
+                    const priority = statRows[0].querySelectorAll(".ghx-field")[1];
+                    priorityText = (priority?.getAttribute("data-tooltip") ?? "").replace(" priority", "");
+                    if (priorityText.indexOf("Default") === -1) {
+                        isSev = true;
+                    }
+                }
+                
+                
+                //swimlane for pbi/sev issues
                 if (issue.closest(".ghx-swimlane")?.classList.contains("ghx-first")) {
                     isPbi = true;
                 }
 
-                let codeBase = "";            
+                //codebase key
                 const codeBaseRows = extraFields?.querySelectorAll(".ghx-row"); 
                 if (codeBaseRows) {        
                     const codeBaseText = codeBaseRows[1].querySelector(".ghx-extra-field");
@@ -27,22 +56,10 @@ export class Issue {
                     codeBase = codeBaseText.getAttribute("data-tooltip") ?? "";
                     codeBase = codeBase.replace("CodebaseKey: ", "");
                     }
-                }
-                                        
-                let isSev = false;
-                let priorityText = "Default";
-                const statFields = issue.querySelector(".ghx-stat-fields");
-                const statRows = statFields?.querySelectorAll(".ghx-row"); 
-                if (statRows) {
-                    const priority = statRows[0].querySelectorAll(".ghx-field")[1];
-                    priorityText = (priority?.getAttribute("data-tooltip") ?? "").replace(" priority", "");
-                    if (priorityText.indexOf("Default") === -1) {
-                        isSev = true;
-                    }                
-                }
+                }             
                     
                 if (ticketNumber) {        
-                    const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev)
+                    const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev, summaryText)
                     issueList.push(ticket);
                 }
             });    

@@ -45,12 +45,13 @@
               group="version"               
               item-key="Number">
               <template #item="{element}">
-                <div> 
+                <div>                   
                   <div>
-                    {{ element.Number }}                  
+                    {{ element.Number }}                      
                     <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                    <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                    <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
                   </div>
+                  <small>{{element.Summary}}</small>
                 </div>
               </template>
             </draggable>
@@ -107,12 +108,13 @@
                 group="version"               
                 item-key="Number">
                 <template #item="{element}">
-                  <div> 
+                  <div>                   
                     <div>
-                      {{ element.Number }}                  
+                      {{ element.Number }}                      
                       <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                      <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>                    
+                      <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
                     </div>
+                    <small>{{element.Summary}}</small>
                   </div>
                 </template>
               </draggable>
@@ -266,7 +268,7 @@ const copyVersionForSlack = function(versionNumber) {
     let output = `@c2c-integrators\r\n`;
     output += `${v.CodeBase} ${v.Number}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? ` ${issue.Priority}` : ""}\r\n`;
+      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\r\n`;
     });
     output += `\r\n`;
 
@@ -291,7 +293,7 @@ const copyVersionForExcel = function(versionNumber) {
 
     //H
     v.Issues.forEach( (issue) => {
-      output += `${issue.Number}\n`;
+      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\n`;
     });
 
     output += `"\t${hasSev ? "Yes" : "No"}`;        //I
