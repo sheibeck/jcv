@@ -446,7 +446,7 @@ fetchBoardName();
 #jcv-root { 
   overflow: scroll;
   border: solid 1px black;
-  background-color: black;
+  background-color: white;
   height: 100%;
   width: 100%;
 }
