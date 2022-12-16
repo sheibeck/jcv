@@ -73,6 +73,9 @@
             <div class="row">
               <div class="col">
                 <span class="h3">Versions</span>
+                <sup>
+                  <i title="Showing last 10 versions." class="fa-solid fa-circle-question"></i>
+                </sup>
               </div>
             </div>
             <div class="row d-flex border-bottom pb-2 mb-2">
@@ -93,9 +96,12 @@
                 </div>
               </div>
               <div class="col d-flex flex-row-reverse">
-                <button type="button" class="btn" :class="{ 'btn-primary': showReleasedVersions, 'btn-secondary': !showReleasedVersions }" 
-                  title="Hide/show released versions"
-                  @click="toggleReleasedVersions()">Released</button>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
+                    :checked="showReleasedVersions"
+                    @click="toggleReleasedVersions()">
+                  <label class="form-check-label" for="showReleased">Include released?</label>
+                </div>            
                 <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
               </div>
             </div>        
