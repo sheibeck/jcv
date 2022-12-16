@@ -18,7 +18,7 @@
               <div class="h4 pt-1">
                 {{boardName}}
               </div>
-              <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="fetchAllVersions()">
+              <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="processSwimlanes()">
                 <i class="fa-solid fa-arrow-rotate-right"></i>
               </button>
             </div>
@@ -106,7 +106,7 @@
               </div>
             </div>        
             <div class="row">
-              <div v-for="version in getVersionListByFilter()" v-bind:key="version.Number" class="mb-2">
+              <div v-for="version in versions" v-bind:key="version.Number" class="mb-2">
                 <div class="h4">
                   {{version.CodeBase}} {{version.Number}}
                   <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
@@ -216,6 +216,7 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
 //scrape issues out of jira and add them to the list of
 //tickets that are pending integration
 const processSwimlanes = function() {  
+  debugger;
   const issueList = Issue.GetIssues().sort(compareCodeBase);
   
   //sort the issues list and then create the component/codebases  
@@ -228,6 +229,8 @@ const processSwimlanes = function() {
   });
 
   handleVersionedIssues();
+
+  sendMessage("Refreshed sub-task list");
 }
 
 const handleVersionedIssues = function() { 
@@ -247,13 +250,19 @@ const handleVersionedIssues = function() {
   });
 }
 
-const toggleReleasedVersions = function() {
+const toggleReleasedVersions = () => {
   showReleasedVersions.value = !showReleasedVersions.value;
+  fetchAllVersions(showReleasedVersions.value);
 }
 
-const getVersionListByFilter = function() {  
-  const vs = versions.value.filter( v => v.Released === false || v.Released == null || v.Released == undefined || v.Released === showReleasedVersions.value );  
-  return vs;
+const getVersionListByFilter = function() { 
+  if (showReleasedVersions.value) {
+    return versions.value;
+  }
+  else {
+    const vs = versions.value.filter( v => v.Released === false || v.Released == null || v.Released == undefined );  
+    return vs;
+  }
 }
 
 const addVersion = function() {  
@@ -379,12 +388,10 @@ function versionListChanged(added, removed, moved){
     fireStoreDb.saveAll(versions.value);   
 }
 
-const fetchAllVersions = async() => {    
-  const versionList = await fireStoreDb.fetchAll();
+const fetchAllVersions = async(includeReleased) => {
+  const versionList = await fireStoreDb.fetchAll(includeReleased);
   versions = ref(versionList);
   processSwimlanes();
-
-  sendMessage("Refreshed sub-task list");
 }
 
 const isBoard = computed(() => {
@@ -405,7 +412,7 @@ onMounted(async () => {
   authStore.login({ interactive: false });
     
   document.addEventListener("JcvVersionsUpdated", async (event) => {    
-    await fetchAllVersions();
+    await fetchAllVersions(showReleasedVersions.value);
   });
 
   document.addEventListener("openJcv", async(event) => {
