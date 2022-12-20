@@ -6,7 +6,7 @@ export class Version {
     Issues = new Array<JiraTicket>();
     Released: boolean = false;
     ReleaseDate: string = "";    
-    IsPlanned: boolean = this.isPlanned();
+    IsBuilt: boolean = false;
     PI: string = "";
 
     constructor(number, codebase) {
@@ -14,7 +14,7 @@ export class Version {
         this.CodeBase = codebase;
     }
 
-    public isPlanned(): boolean {
+    public IsSev(): boolean {
         const sevIssues = this.Issues.find( i => i.IsSev);
         return sevIssues != null;
     }

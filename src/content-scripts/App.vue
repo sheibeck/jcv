@@ -113,7 +113,11 @@
                   <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
                   <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>              
                 </div>
-                <div class="col">
+                <div class="col d-flex">
+                  <div class="form-check me-4">
+                    <input type="checkbox" class="form-check-input" v-model="version.IsBuilt" @change="updateVersion(version)">
+                    <label class="form-check-label">Built</label>
+                  </div>
                   <div class="form-check">
                     <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
                     <label class="form-check-label">Released</label>
@@ -215,9 +219,8 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
 
 //scrape issues out of jira and add them to the list of
 //tickets that are pending integration
-const processSwimlanes = function() {  
-  debugger;
-  const issueList = Issue.GetIssues().sort(compareCodeBase);
+const processSwimlanes = function() {    
+  const issueList = Issue.GetIssues();//.sort(compareCodeBase);
   
   //sort the issues list and then create the component/codebases  
   issueList.forEach( (issue) => {
