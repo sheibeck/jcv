@@ -74,7 +74,7 @@
               <div class="col">
                 <span class="h3">Versions</span>
                 <sup>
-                  <i title="Showing last 10 versions." class="fa-solid fa-circle-question"></i>
+                  <i title="Showing last 25 versions." class="fa-solid fa-circle-question"></i>
                 </sup>
               </div>
             </div>
@@ -114,6 +114,13 @@
                   <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>              
                 </div>
                 <div class="col d-flex">
+                  <div class="form-check me-4">
+                    <input type="checkbox" class="form-check-input" v-model="version.IsPlanned" @change="updateVersion(version)">
+                    <label class="form-check-label">Planned<sup>
+                        <i title="This build has been sent to integration as a build plan." class="fa-solid fa-circle-question"></i>
+                      </sup>
+                    </label>
+                  </div>
                   <div class="form-check me-4">
                     <input type="checkbox" class="form-check-input" v-model="version.IsBuilt" @change="updateVersion(version)">
                     <label class="form-check-label">Built</label>

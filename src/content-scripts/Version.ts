@@ -7,6 +7,7 @@ export class Version {
     Released: boolean = false;
     ReleaseDate: string = "";    
     IsBuilt: boolean = false;
+    IsPlanned: boolean = false;
     PI: string = "";
 
     constructor(number, codebase) {
