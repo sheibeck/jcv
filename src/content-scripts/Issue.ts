@@ -43,7 +43,8 @@ export class Issue {
                 
                 
                 //swimlane for pbi/sev issues
-                if (issue.closest(".ghx-swimlane")?.classList.contains("ghx-first")) {
+                const swimLaneLabel = issue.closest(".ghx-swimlane")?.querySelector(".ghx-swimlane-header")?.getAttribute("aria-label");
+                if (swimLaneLabel?.includes("PBI")) {
                     isPbi = true;
                 }
 
