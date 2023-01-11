@@ -5,16 +5,21 @@
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   
   <div id="jcv-root" class="container" :class="{ hidden: !isVisible }">
-    <div v-if="!isBoard">
-      <span>This extension only works on a board!</span>
-      <a href="https://dealeron.atlassian.net/jira/people/6150b95207ac3c0068966f97/boards/41?quickFilter=272&quickFilter=271&quickFilter=121">Use This Board!</a>
+    <div v-if="!isBoard" class="d-flex pt-2">
+      <div class="pt-2">
+        <span>This extension only works on a board!</span>
+        <a href="https://dealeron.atlassian.net/jira/people/6150b95207ac3c0068966f97/boards/41?quickFilter=272&quickFilter=271&quickFilter=121">Use This Board!</a>
+      </div>
+      <div class="ms-auto">
+        <button type="button" class="btn btn-sm btn-secondary" @click="toggleApp()">Close</button>
+      </div>
     </div>
     <div v-else>
       <div v-if="isAuthenticated">      
-        <div class="d-flex">
+        <div class="d-flex navbar bg-dark px-2">
           <div class="flex-grow-1">
-            <div class="h5">Jira Version Manager</div>            
-            <div class="d-flex">
+            <div class="h5">Jira Version Manager</div>
+            <div class="d-flex p-1">
               <div class="h4 pt-1">
                 {{boardName}}
               </div>
@@ -24,7 +29,7 @@
             </div>
           </div>
 
-          <div class="d-flex mr-auto">
+          <div class="d-flex ms-auto p-1">
             <div class="px-1">
               <img class="profile-img" :src="user?.profileImage" />
             </div>
@@ -32,7 +37,7 @@
               <div class="contentsview__user-name">{{ user?.nickName }}</div>
               <div class="contentsview__user-email">{{ user?.email }}</div>
             </div>
-            <div class="p-1 mr-4">
+            <div class="p-1 ms-auto">
               <button
                 @click="authStore.logout"
                 class="btn btn-sm btn-secondary">
