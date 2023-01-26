@@ -1,5 +1,5 @@
 # Installation
-* Download the [extension .zip] using the `download` button @ https://github.com/sheibeck/jcv/blob/main/dist.zip
+* Download the chrome extension using the `download` button @ https://github.com/sheibeck/jcv/blob/main/dist.zip
 * Unpack this file then open `chrome://extensions/`
 * Choose `Load Unpacked Extension` and targe the directory you unpacked in step #1
 * Navigate to your jira cloud instance
