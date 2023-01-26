@@ -16,14 +16,14 @@
     </div>
     <div v-else>
       <div v-if="isAuthenticated">      
-        <div class="d-flex navbar bg-dark px-2">
+        <div class="d-flex navbar bg-light px-2 mb-1">
           <div class="flex-grow-1">
             <div class="h5">Jira Version Manager</div>
             <div class="d-flex p-1">
               <div class="h4 pt-1">
                 {{boardName}}
               </div>
-              <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="processSwimlanes()">
+              <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
                 <i class="fa-solid fa-arrow-rotate-right"></i>
               </button>
             </div>
@@ -50,14 +50,14 @@
         
         <div class="row">
           <div class="col">        
-            <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name">
+            <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
               <div class="h4 border-bottom">
                 {{codebase.Name}}
               </div>        
               <draggable 
                 @change="issueListChanged"            
                 v-model="codebase.Issues" 
-                class="border version-drop"
+                class="border version-drop bg-white p-1"
                 group="version"               
                 item-key="Number">
                 <template #item="{element}">
@@ -76,49 +76,51 @@
 
           <div class="col">
             <div class="row">
-              <div class="col">
-                <span class="h3">Versions</span>
-                <sup>
-                  <i title="Showing last 25 versions." class="fa-solid fa-circle-question"></i>
-                </sup>
-              </div>
-            </div>
-            <div class="row d-flex border-bottom pb-2 mb-2">
-              <div class="col">
-                <div class="input-group input-group-sm">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text" id="new-version-number">#</span>
-                  </div>
-                  <input ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number">
+              <div class="d-flex">
+                <div>
+                  <span class="h3">Versions</span>
+                  <sup>
+                    <i title="Showing last 15 versions." class="fa-solid fa-circle-question"></i>
+                  </sup>
                 </div>
-              </div>
-              <div class="col-4">
-                <div class="input-group input-group-sm">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text" id="new-version-number">Code</span>
-                  </div>
-                  <input ref="versionCodeBase" type="text" class="form-control" aria-label="Version Number" aria-describedby="new-version-number" value="VHCLIAA">
-                </div>
-              </div>
-              <div class="col d-flex flex-row-reverse">
-                <div class="form-check form-switch">
+              
+                <div class="form-check form-switch ms-auto">
                   <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
                     :checked="showReleasedVersions"
                     @click="toggleReleasedVersions()">
-                  <label class="form-check-label" for="showReleased">Include released?</label>
-                </div>            
-                <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>      
+                  <label class="form-check-label mt-1" for="showReleased">Released?
+                    <sup>
+                      <i title="Show released versions" class="fa-solid fa-circle-question"></i>
+                    </sup>
+                  </label>
+                </div>                  
+               
               </div>
-            </div>        
-            <div class="row">
-              <div v-for="version in versions" v-bind:key="version.Number" class="mb-2">
-                <div class="h4">
-                  {{version.CodeBase}} {{version.Number}}
-                  <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
-                  <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
-                  <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>              
-                </div>
-                <div class="col d-flex">
+            </div>
+            <div class="d-flex border-bottom pb-2 mb-2">            
+              <div class="form-floating mx-1">
+                <input id="version" ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" placeholder="#.##.#">
+                <label for="version">Version #:</label>
+              </div>            
+              <div class="form-floating mx-1">                  
+                <input id="codeBase" ref="versionCodeBase" type="text" class="form-control" aria-label="CodeBaseKey" value="VHCLIAA" placeholder="VHCLIAA">
+                <label for="codeBase">CodeBaseKey:</label>
+              </div>  
+              <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
+            </div>
+            <div v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
+              <div class="card-body p-0">
+                <h5 class="card-title d-flex">
+                  <div>
+                    {{version.CodeBase}} {{version.Number}}
+                  </div>
+                  <div class="ms-auto">
+                    <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
+                    <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
+                    <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>
+                  </div>
+                </h5>
+                <h6 class="card-subtitle text-muted col d-flex">
                   <div class="form-check me-4">
                     <input type="checkbox" class="form-check-input" v-model="version.IsPlanned" @change="updateVersion(version)">
                     <label class="form-check-label">Planned<sup>
@@ -134,11 +136,11 @@
                     <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
                     <label class="form-check-label">Released</label>
                   </div>
-                </div>
+                </h6>
                 <draggable 
                   @change="versionListChanged"              
                   v-model="version.Issues" 
-                  class="border version-drop"
+                  class="card-text border version-drop bg-white p-1"
                   group="version"               
                   item-key="Number">
                   <template #item="{element}">
@@ -152,9 +154,8 @@
                     </div>
                   </template>
                 </draggable>
-                      
               </div>
-            </div>     
+            </div>          
           </div>
         </div>
       </div>
@@ -232,7 +233,7 @@ function compareCodeBase( a: JiraTicket, b: JiraTicket ) {
 //scrape issues out of jira and add them to the list of
 //tickets that are pending integration
 const processSwimlanes = function() {    
-  const issueList = Issue.GetIssues();//.sort(compareCodeBase);
+  const issueList = Issue.GetIssues();
   
   //sort the issues list and then create the component/codebases  
   issueList.forEach( (issue) => {
@@ -244,7 +245,10 @@ const processSwimlanes = function() {
   });
 
   handleVersionedIssues();
+}
 
+const refreshButtonHandler = function() {
+  processSwimlanes();
   sendMessage("Refreshed sub-task list");
 }
 

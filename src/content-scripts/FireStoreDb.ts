@@ -64,16 +64,18 @@ export class FireStoreDb {
     }
 
     fetchAll = async(includeReleased) => {
+        const fetchLimit = 15;
+
         var versions = new Array<Version>();
 
         const docRef = collection(this.db, "versions");
         let q;        
 
         if (includeReleased) {
-            q = query(docRef, orderBy("Number", "desc"), limit(25));
+            q = query(docRef, orderBy("Number", "desc"), limit(fetchLimit));
         }
         else {
-            q = query(docRef, where("Released", "!=", true), limit(25));
+            q = query(docRef, where("Released", "!=", true), limit(fetchLimit));
         }
 
         const querySnapshot = await getDocs(q);
