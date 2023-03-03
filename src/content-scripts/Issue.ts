@@ -29,7 +29,7 @@ export class Issue {
                     //if this isn't a sub-task then skip it. we don't want stories in here, just workable tickets
                     const taskType = statRows[0].querySelectorAll(".ghx-field")[0];
                     const taskTypeText =  (taskType?.getAttribute("data-tooltip") ?? "");
-                    if (taskTypeText !== "Sub-task") {
+                    if (taskTypeText !== "Sub-task" && taskTypeText !== "Regression") {
                         return;
                     }
 
