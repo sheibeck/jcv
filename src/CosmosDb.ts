@@ -1,24 +1,19 @@
 import { CosmosClient } from "@azure/cosmos";
 import type { Version } from "./Version";
 
-const endpoint = 'https://corsproxy.io/?' + encodeURIComponent("https://c2cjiraversioner.documents.azure.com:443/");
-const key = import.meta.env.VUE_APP_COSMOSDB_KEY;
+const connectionString = import.meta.env.VITE_COSMOSDB_CS;
+const client = new CosmosClient(`${connectionString}`);
 
-const client = new CosmosClient("AccountEndpoint=https://c2cjiraversioner.documents.azure.com:443/;AccountKey=9AVSNKSKGQDHlilnc8OnGoJ0GLk8VMAyvM6S23WBAhrGhZ5Xo7zeJLRNIZX257ihAE8W6YiqnlWYACDbYS5Hsg==;");
-/*const client = new CosmosClient({ endpoint, key, connectionPolicy: {
-    enableEndpointDiscovery: false
-}});
-*/
 const dbname = "versions";
 const containerName = "versions";
 const { database } = await client.databases.createIfNotExists({ id: dbname });
 const { container } = await database.containers.createIfNotExists({ id: containerName });
 
 const fetchAllItems = async (includeReleased?: boolean) => {
-    let query = "SELECT * from c WHERE c.Released = false ORDERBY c.Number asc LIMIT 20";
+    let query = "SELECT TOP 20 * from c WHERE c.Released = false ORDER BY c.Number asc";
 
     if (includeReleased) {
-        query = "SELECT * from c WHERE ORDERBY c.Number asc LIMIT 20";
+        query = "SELECT TOP 20 * from c WHERE ORDER BY c.Number asc LIMIT 20";
     }
 
     const versions: any = await container.items
@@ -27,8 +22,8 @@ const fetchAllItems = async (includeReleased?: boolean) => {
 
     var versionList = new Array<Version>();
 
-    versions.forEach((version: any) => {
-        versions.push(version as Version);
+    versions.resources.forEach((version: any) => {
+        versionList.push(version as Version);
     });
 
     return versionList;
@@ -40,7 +35,13 @@ const saveItem = async (version: Version) => {
 }
 
 const deleteItem = async (version: Version) => {
-    await container.item(version.Id).delete();
+    const versions: any = await container.items
+        .query(`SELECT TOP * from c WHERE Id = '${version.Id}'`)
+        .fetchAll();
+    
+    versions.resources.forEach((version: any) => {
+         container.item(version.id).delete(); 
+    });
 }
 
 const saveAllItems = async(versions: Array<Version>) => {

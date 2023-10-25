@@ -1,6 +1,6 @@
 <template>
   <!-- Latest compiled and minified CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
@@ -31,7 +31,7 @@
           group="version"
           item-key="Number">
           <template #item="{element}">
-            <div>                   
+            <div class="bg-gray border">                   
               <div>
                 {{ element.Number }}                      
                 <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
@@ -149,8 +149,6 @@ const boardName = ref("C2C - Integration");
 const showReleasedVersions = ref(false);
 const issueService = new IssueService();
 
-//scrape issues out of jira and add them to the list of
-//tickets that are pending integration
 const getIssues = async function() {    
   const issueList: any = await issueService.GetIssues();
   
@@ -242,7 +240,6 @@ const removeVersion = async(versionNumber: string, codeBase: string) =>{
         versions.value.splice(index, 1);
       }
   
-      //db.save(versions.value);
       await deleteItem(v);
     }
     getIssues();
@@ -328,7 +325,7 @@ const updateVersion = async (version: any) => {
 }
 
 const versionListChanged = async () => {
-    //await saveAllItems(versions.value);   
+    await saveAllItems(versions.value);   
 }
 
 const fetchAllVersions = async(includeReleased: boolean) => {
@@ -338,7 +335,7 @@ const fetchAllVersions = async(includeReleased: boolean) => {
 }
 
 onMounted(async () => {
-  //await fetchAllVersions(showReleasedVersions.value);
+  await fetchAllVersions(showReleasedVersions.value);
   getIssues();
 });
 </script>

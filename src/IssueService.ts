@@ -4,7 +4,7 @@ export class IssueService {
 
     private fetchIssues(): any {
         return new Promise((resolve, reject) => {
-            const rawToken = "sheibeck@dealeron.com:ATATT3xFfGF0xyPqPadSpUScPrIsbYlZBlO20KQTLswiomJv5sF5oPD9aRQD_U5KCCGvYKiDcyPXijCnm2V4p6gLZerQVqiJ0czENxXhx5f50Bo_1HPF3sw6zBEO8bYDREc1ZWDfevYogn2vmvlc9e5RAbFoTQdG4yCpATm47H1-0JQ_wwwXeEo=9878B9F9";
+            const rawToken: string = import.meta.env.VITE_JIRA_TOKEN;
             const token = btoa(rawToken);
             const jiraUrl = "https://dealeron.atlassian.net/rest/agile/1.0/board/94/issue?jql=status%20=%20%27Integrating%27";
             const url = 'https://corsproxy.io/?' + encodeURIComponent(jiraUrl);
