@@ -13,7 +13,7 @@ const fetchAllItems = async (includeReleased?: boolean) => {
     let query = "SELECT TOP 20 * from c WHERE c.Released = false ORDER BY c.Number asc";
 
     if (includeReleased) {
-        query = "SELECT TOP 20 * from c WHERE ORDER BY c.Number asc LIMIT 20";
+        query = "SELECT TOP 20 * from c ORDER BY c.Number asc";
     }
 
     const versions: any = await container.items
