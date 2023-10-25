@@ -30,23 +30,35 @@ const fetchAllItems = async (includeReleased?: boolean) => {
 }
 
 const saveItem = async (version: Version) => {
+    //prep the item for upsert
     const item = JSON.parse(JSON.stringify(version));
-    await container.items.create(item);
+
+    if (version.id) {
+        const { resource: docToUpdate } = await container.item(version.id, version.id).read();
+
+        if (docToUpdate) {
+            await container
+                .item(version.id, version.id)
+                .replace(item);
+        }
+    }
+    else {
+        await container.items.create(item);
+    }
+
+    return item.id;
 }
 
 const deleteItem = async (version: Version) => {
-    const versions: any = await container.items
-        .query(`SELECT TOP * from c WHERE Id = '${version.Id}'`)
-        .fetchAll();
-    
-    versions.resources.forEach((version: any) => {
-         container.item(version.id).delete(); 
-    });
+    if (version.id) {
+        const { statusCode } = await container.item(version.id, version.id).delete();
+    };
 }
 
 const saveAllItems = async(versions: Array<Version>) => {
-    versions.forEach( async (version) => {
-        saveItem(version);
+    versions.forEach( async (version: Version) => {
+        const id = await saveItem(version);
+        version.id = id;
     })
 }
 

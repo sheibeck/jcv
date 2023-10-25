@@ -31,8 +31,8 @@
           group="version"
           item-key="Number">
           <template #item="{element}">
-            <div class="bg-gray border">                   
-              <div>
+            <div class="border m-1 p-1">
+              <div class="bg-gray">
                 {{ element.Number }}                      
                 <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                 <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
@@ -114,9 +114,9 @@
             group="version"               
             item-key="Number">
             <template #item="{element}">
-              <div>                   
-                <div>
-                  {{ element.Number }}                      
+              <div class="border m-1 p-1">
+                <div class="bg-gray">
+                  {{ element.Number }}
                   <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                   <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
                 </div>
@@ -208,7 +208,7 @@ function uuidv4() {
 }
 
 const addVersion = async function() {  
-  const version = new Version(uuidv4(), newVersionNumber.value.value, versionCodeBase.value.value); 
+  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value); 
   if (version.Number === "")  {
     sendMessage("You must include a version number");
     return;
@@ -224,8 +224,9 @@ const addVersion = async function() {
     return;
   }
 
+  const id = await saveItem(version);
+  version.id = id;
   versions.value.unshift(version);  
-  await saveItem(version);
 
   sendMessage(`Version ${version.Number} added ${version.CodeBase}`);
 }
