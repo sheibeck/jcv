@@ -1,9 +1,4 @@
 <template>
-  <!-- Latest compiled and minified CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
   <div class="d-flex navbar bg-light px-2 mb-1">
     <div class="flex-grow-1">
       <div class="h5">Jira Version Manager</div>
@@ -12,7 +7,7 @@
           {{boardName}}
         </div>
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
-          <i class="fa-solid fa-arrow-rotate-right"></i>
+          <i class="fas"></i>
         </button>
       </div>
     </div>
@@ -85,7 +80,7 @@
               {{version.CodeBase}} {{version.Number}}
             </div>
             <div class="ms-auto">
-              <i class="fa-solid fa-trash pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
+              <i class="fas pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
               <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
               <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>
             </div>
