@@ -3,11 +3,11 @@ import { Version } from "./Version";
 export class Database {
     Name: string;
 
-    constructor(name) {
+    constructor(name: string) {
         this.Name = name;
     }
 
-    save(value) {
+    save(value: Object) {
         const json = JSON.stringify(value);
         window.localStorage.setItem(this.Name, json);
     }

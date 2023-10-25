@@ -2,7 +2,7 @@
 import { getFirestore, updateDoc } from "firebase/firestore";
 import { collection, addDoc, getDocs, deleteDoc, query, where, orderBy, limit, onSnapshot, doc} from "firebase/firestore"; 
 import { initializeApp } from 'firebase/app'
-import { firebaseConfig } from "../plugins/firebase_config";
+import { firebaseConfig } from "../src/plugins/firebase_config";
 import { Version } from "./Version";
 
 export class FireStoreDb {
@@ -18,7 +18,7 @@ export class FireStoreDb {
         try {
             const doc = await this.fetch(version.Number, version.CodeBase);
             if (doc != null) {
-                await updateDoc(doc, JSON.parse(JSON.stringify(version)));       
+                await updateDoc(doc, JSON.parse(JSON.stringify(version)));
             }
             else {
                 await addDoc(collection(this.db, "versions"), JSON.parse(JSON.stringify(version)));                
@@ -47,7 +47,7 @@ export class FireStoreDb {
         }    
     } 
 
-    fetch = async(versionNumber, codeBase) => {
+    fetch = async(versionNumber: string, codeBase: string) => {
         // Create a reference to the cities collection        
         const docRef = collection(this.db, "versions");
 
@@ -63,7 +63,7 @@ export class FireStoreDb {
         }
     }
 
-    fetchAll = async(includeReleased) => {
+    fetchAll = async(includeReleased: boolean) => {
         const fetchLimit = 15;
 
         var versions = new Array<Version>();
