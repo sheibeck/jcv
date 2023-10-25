@@ -21,6 +21,14 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
 
+## Project Config
+Add `.env` file with the following:
+
+```sh
+VITE_COSMOSDB_CS=<your_cosmosdb_connectionstring>
+VITE_JIRA_TOKEN=<your_jira_user_email>:<your_jira_api_key>
+```
+
 ## Project Setup
 
 ```sh
