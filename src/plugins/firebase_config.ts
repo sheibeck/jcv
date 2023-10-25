@@ -1,13 +1,13 @@
-import { FirebaseOptions } from 'firebase/app' 
+import type { FirebaseOptions } from 'firebase/app' 
  
 const firebaseConfig = { 
-  apiKey: process.env.VUE_APP_FIREBASE_APIKEY, 
-  authDomain: process.env.VUE_APP_FIREBASE_AUTHDOMAIN, 
-  projectId: process.env.VUE_APP_FIREBASE_PROJECTID, 
-  storageBucket: process.env.VUE_APP_FIREBASE_STORAGEBUCKET, 
-  messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGINGSENDERID, 
-  appId: process.env.VUE_APP_FIREBASE_APPID, 
-  measurementId: process.env.VUE_APP_MEASUREMENTID 
+  apiKey: import.meta.env.VUE_APP_FIREBASE_APIKEY, 
+  authDomain: import.meta.env.VUE_APP_FIREBASE_AUTHDOMAIN, 
+  projectId: import.meta.env.VUE_APP_FIREBASE_PROJECTID, 
+  storageBucket: import.meta.env.VUE_APP_FIREBASE_STORAGEBUCKET, 
+  messagingSenderId: import.meta.env.VUE_APP_FIREBASE_MESSAGINGSENDERID, 
+  appId: import.meta.env.VUE_APP_FIREBASE_APPID, 
+  measurementId: import.meta.env.VUE_APP_MEASUREMENTID 
 } as FirebaseOptions 
  
  

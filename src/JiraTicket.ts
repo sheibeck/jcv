@@ -6,7 +6,7 @@ export class JiraTicket {
     Priority: string;
     Summary: string;
 
-    constructor(number, codeBase, priorityText, isPbi, isSev, summary?) {
+    constructor(number: string, codeBase: string, priorityText: string, isPbi: boolean, isSev: boolean, summary?: string) {
       this.Number = number;      
       this.CodeBase = codeBase;
       this.Priority = priorityText;

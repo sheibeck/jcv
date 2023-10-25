@@ -4,11 +4,11 @@ export class Component {
     Name: string;
     CodeBases = new Array<CodeBase>();
 
-    constructor(name) {
+    constructor(name: string) {
       this.Name = name;
     }
 
-    AddCodeBase(codeBase) {
+    AddCodeBase(codeBase: CodeBase) {
       this.CodeBases.push(codeBase);
     }
 }
