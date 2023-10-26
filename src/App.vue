@@ -134,6 +134,7 @@ import { Version } from "./Version";
 import { IssueService } from "./IssueService";
 import draggable from 'vuedraggable';
 import Toastify from 'toastify-js';
+import { VersionCompare } from "./VersionSort";
 import { fetchAllItems, deleteItem, saveItem, saveAllItems } from "./CosmosDb";
 
 const component = ref(new Component("C2C"));
@@ -196,12 +197,6 @@ const getVersionListByFilter = function() {
   }
 }
 
-function uuidv4() {
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
-}
-
 const addVersion = async function() {  
   const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value); 
   if (version.Number === "")  {
@@ -221,7 +216,9 @@ const addVersion = async function() {
 
   const id = await saveItem(version);
   version.id = id;
-  versions.value.unshift(version);  
+
+  //add new versions to the top of the list
+  versions.value.unshift(version);
 
   sendMessage(`Version ${version.Number} added ${version.CodeBase}`);
 }
@@ -327,6 +324,7 @@ const versionListChanged = async () => {
 const fetchAllVersions = async(includeReleased: boolean) => {
   const versionList = await fetchAllItems(includeReleased);
   versions.value = versionList;
+  versions.value.sort(VersionCompare);
   getIssues();
 }
 
