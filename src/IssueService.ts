@@ -48,7 +48,7 @@ export class IssueService {
         const issueList = new Array<JiraTicket>();
 
         jiraIssues.issues.forEach( (issue: any) => {
-            const ticketNumber = issue.id;
+            const ticketNumber = issue.key;
             const codeBase = issue.fields.customfield_10130?.value ?? "";  
             const priorityText = issue.fields.priority?.name ?? "Default";
             const isPbi = false;
