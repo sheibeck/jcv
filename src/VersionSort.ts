@@ -43,7 +43,7 @@ function getTokens(a: string)
 }
  
 // Comparator to sort the array of strings
-export function VersionCompare(a: Version, b: Version)
+export default function VersionCompare(a: Version, b: Version): boolean
 {
     // Stores the numerical substrings
     let va = [], vb = [];

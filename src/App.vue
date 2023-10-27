@@ -133,8 +133,9 @@ import { CodeBase } from "./CodeBase";
 import { Version } from "./Version";
 import { IssueService } from "./IssueService";
 import draggable from 'vuedraggable';
-import Toastify from 'toastify-js';
-import { VersionCompare } from "./VersionSort";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import VersionCompare from "./VersionSort";
 import { fetchAllItems, deleteItem, saveItem, saveAllItems } from "./CosmosDb";
 
 const component = ref(new Component("C2C"));
@@ -298,15 +299,12 @@ function getFormattedDate() {
 }
 
 const sendMessage = function (message: string) {
-  Toastify({
-      text: message,
-      position: "right",
-      gravity: "bottom",
-      duration: 2000,
+  toast( message, {
+      autoClose: 2000,
       style: {
         zIndex: 999999,
       },
-    }).showToast();
+    })
 }
 
 function issueListChanged(){
@@ -324,7 +322,6 @@ const versionListChanged = async () => {
 const fetchAllVersions = async(includeReleased: boolean) => {
   const versionList = await fetchAllItems(includeReleased);
   versions.value = versionList;
-  versions.value.sort(VersionCompare);
   getIssues();
 }
 
