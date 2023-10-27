@@ -4,16 +4,19 @@
       <div class="h5">Jira Version Manager</div>
       <div class="d-flex p-1">
         <div class="h4 pt-1">
-          {{boardName}}
+          {{getBoardDisplayName}}
         </div>
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
           <i class="fas"></i>
+        </button>
+        <button class="btn btn-sm btn-secondary m-1" title="settings" @click="toggleShowSettings">
+          <i class="fas"></i>
         </button>
       </div>
     </div>
   </div>
   
-  <div class="row">
+  <div class="row" v-if="component?.CodeBases">
     <div class="col">        
       <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
         <div class="h4 border-bottom">
@@ -68,7 +71,7 @@
           <label for="version">Version #:</label>
         </div>            
         <div class="form-floating mx-1">                  
-          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control" aria-label="CodeBaseKey" value="VHCLIAA" placeholder="VHCLIAA">
+          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
           <label for="codeBase">CodeBaseKey:</label>
         </div>  
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
@@ -120,10 +123,11 @@
             </template>
           </draggable>
         </div>
-      </div>          
+      </div>
     </div>
   </div>
 
+  <Settings v-if="isLoaded" :showSettings="showSettings" @closeSettings="showSettings=false" @saveSettings="saveSettings" :userSettings="settings"></Settings>
 </template>
 
 <script setup lang="ts">
@@ -135,26 +139,40 @@ import { IssueService } from "./IssueService";
 import draggable from 'vuedraggable';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import { UserSettings } from "./UserSettings";
+import Settings from "./components/Settings.vue";
 import VersionCompare from "./VersionSort";
 import { fetchAllItems, deleteItem, saveItem, saveAllItems } from "./CosmosDb";
 
-const component = ref(new Component("C2C"));
+const settings = ref(new UserSettings());
+const component = ref();
 const newVersionNumber = ref();
 const versionCodeBase = ref();
 const versions = ref(new Array<Version>());
-const boardName = ref("C2C - Integration");
 const showReleasedVersions = ref(false);
 const issueService = new IssueService();
+const showSettings = ref(false);
+const isLoaded = ref(false);
+
+const toggleShowSettings = () => showSettings.value = !showSettings.value;
+
+const getBoardNumber = computed(() => {
+  return settings.value?.BoardNumber ?? "0";
+});
+
+const getBoardDisplayName = computed(() => {
+  return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
+});
 
 const getIssues = async function() {    
-  const issueList: any = await issueService.GetIssues();
+  const issueList: any = await issueService.GetIssues(getBoardNumber.value);
   
   //sort the issues list and then create the component/codebases  
   issueList.forEach( (issue: any) => {
-    if ( !component.value.CodeBases.find( cb => cb.Name == issue.CodeBase ) ) {
+    if ( !component.value.CodeBases.find( (cb: CodeBase) => cb.Name == issue.CodeBase ) ) {
       component.value.AddCodeBase(new CodeBase(issue.CodeBase));
     }
-    const codeBase = component.value.CodeBases.find( cb => cb.Name == issue.CodeBase );
+    const codeBase = component.value.CodeBases.find( (cb: CodeBase) => cb.Name == issue.CodeBase );
     codeBase?.AddIssue(issue);
   });
 
@@ -163,11 +181,11 @@ const getIssues = async function() {
 
 const refreshButtonHandler = function() {
   getIssues();
-  sendMessage("Updated issues.");
+  sendMessage("Refreshed issues from Jira.");
 }
 
 const handleVersionedIssues = function() { 
-  component.value.CodeBases.forEach( (codebase) => {
+  component.value.CodeBases.forEach( (codebase: CodeBase) => {
     const versionedIssues = new Array<string>();
     codebase.Issues.forEach( (issue) => {      
       const issueIsVersioned = versions.value.findIndex( v => {
@@ -199,7 +217,14 @@ const getVersionListByFilter = function() {
 }
 
 const addVersion = async function() {  
-  const version = new Version(newVersionNumber.value.value, versionCodeBase.value.value); 
+  const version = new Version(settings.value.TeamName, newVersionNumber.value.value, versionCodeBase.value.value);
+
+  if (settings.value.TeamName === "")  {
+    sendMessage("You must include a team name");
+    showSettings.value = true;
+    return;
+  }
+
   if (version.Number === "")  {
     sendMessage("You must include a version number");
     return;
@@ -245,7 +270,7 @@ const removeVersion = async(versionNumber: string, codeBase: string) =>{
 const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
   const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
-    let output = `@c2c-integrators\r\n`;
+    let output = `${settings.value?.SlackGroup}\r\n`;
     output += `${v.CodeBase} ${v.Number}\r\n`;
     v.Issues.forEach( (issue) => {
       output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\r\n`;
@@ -320,7 +345,7 @@ const versionListChanged = async () => {
 }
 
 const fetchAllVersions = async(includeReleased: boolean) => {
-  const versionList = await fetchAllItems(includeReleased);
+  const versionList = await fetchAllItems(settings.value.TeamName, includeReleased);
   versions.value = versionList;
   getIssues();
 }
@@ -329,9 +354,49 @@ const getIssueUrl = (issueNumber: string) => {
   return `https://dealeron.atlassian.net/browse/${issueNumber}`;
 }
 
-onMounted(async () => {
+async function fetchVersions() {
   await fetchAllVersions(showReleasedVersions.value);
   getIssues();
+}
+
+function saveSettings() {
+  if (!settings.value || !settings.value.isValid()) {
+    console.error("Settings not initialized.");
+    return;
+  }
+
+  if (!settings.value.TeamName) {
+    alert("You must enter a team name.");
+    return;
+  }
+  else {
+    component.value = new Component(settings.value.TeamName);
+  }
+
+  if (!settings.value.BoardNumber) {
+    alert("You must enter a board number.");
+    return;
+  }
+  
+  settings.value.saveSettings();
+  showSettings.value = false;
+  fetchVersions();
+
+  sendMessage("Saved settings.");
+}
+
+onMounted(async () => {
+  settings.value.fetchSettings();
+
+  if (!settings.value.isValid()) {
+    showSettings.value = true;
+  }
+  else {
+    component.value = new Component(settings.value.TeamName);
+    fetchVersions();
+  }
+
+  isLoaded.value = true;
 });
 </script>
 
@@ -362,4 +427,4 @@ onMounted(async () => {
   border-radius: 20px;
 }
 
-</style>./IssueService
+</style>./IssueService./UserSettings

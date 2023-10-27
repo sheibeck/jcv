@@ -2,6 +2,7 @@ import { JiraTicket } from "./JiraTicket";
 
 export class Version {
     id: string | undefined;
+    Team: string;
     Number: string;
     CodeBase: string;
     Issues = new Array<JiraTicket>();
@@ -11,7 +12,8 @@ export class Version {
     IsPlanned: boolean = false;
     PI: string = "";
 
-    constructor(number: string, codebase: string) {
+    constructor(team: string, number: string, codebase: string) {
+        this.Team = team;
         this.Number = number;
         this.CodeBase = codebase;
     }

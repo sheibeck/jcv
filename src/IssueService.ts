@@ -1,13 +1,16 @@
 import { JiraTicket } from "./JiraTicket";
 
 export class IssueService {
+    private getJiraUrl(boardNumber: string): string {
+        const url = `https://dealeron.atlassian.net/rest/agile/1.0/board/${boardNumber}/issue?jql=status%20=%20%27Integrating%27`;
+        return url;
+    }
 
-    private fetchIssues(): any {
+    private fetchIssues(boardNumber: string): any {
         return new Promise((resolve, reject) => {
             const rawToken: string = import.meta.env.VITE_JIRA_TOKEN;
             const token = btoa(rawToken);
-            const jiraUrl = "https://dealeron.atlassian.net/rest/agile/1.0/board/94/issue?jql=status%20=%20%27Integrating%27";
-            const url = 'https://corsproxy.io/?' + encodeURIComponent(jiraUrl);
+            const url = 'https://corsproxy.io/?' + encodeURIComponent(this.getJiraUrl(boardNumber));
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${token}`);
@@ -41,9 +44,9 @@ export class IssueService {
         });
     }
 
-    async GetIssues(): Promise<JiraTicket[]> {
+    async GetIssues(boardNumber: string): Promise<JiraTicket[]> {
        
-        const jiraIssues = await this.fetchIssues();
+        const jiraIssues = await this.fetchIssues(boardNumber);
 
         const issueList = new Array<JiraTicket>();
 

@@ -9,11 +9,11 @@ const containerName = "versions";
 const { database } = await client.databases.createIfNotExists({ id: dbname });
 const { container } = await database.containers.createIfNotExists({ id: containerName });
 
-const fetchAllItems = async (includeReleased?: boolean) => {
-    let query = "SELECT TOP 20 * from c WHERE c.Released = false ORDER BY c.Number asc";
+const fetchAllItems = async (team: string, includeReleased?: boolean) => {
+    let query = `SELECT TOP 20 * from c WHERE c.Team = '${team}' AND c.Released = false ORDER BY c.Number asc`;
 
     if (includeReleased) {
-        query = "SELECT TOP 20 * from c ORDER BY c.Number asc";
+        query = `SELECT TOP 20 * from c WHERE c.Team = '${team}' ORDER BY c.Number asc`;
     }
 
     const versions: any = await container.items
