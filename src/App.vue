@@ -28,7 +28,7 @@
           <template #item="{element}">
             <div class="border m-1 p-1">
               <div class="bg-gray">
-                {{ element.Number }}                      
+                {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
                 <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                 <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
               </div>
@@ -111,7 +111,7 @@
             <template #item="{element}">
               <div class="border m-1 p-1">
                 <div class="bg-gray">
-                  {{ element.Number }}
+                  {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
                   <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
                   <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
                 </div>
@@ -323,6 +323,10 @@ const fetchAllVersions = async(includeReleased: boolean) => {
   const versionList = await fetchAllItems(includeReleased);
   versions.value = versionList;
   getIssues();
+}
+
+const getIssueUrl = (issueNumber: string) => {
+  return `https://dealeron.atlassian.net/browse/${issueNumber}`;
 }
 
 onMounted(async () => {
