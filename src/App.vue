@@ -54,7 +54,7 @@
 
           <div class="form-group ms-auto p-1">
               <input type="text" class="form-control" id="team" aria-describedby="searchHelp" 
-                @change="searchVersions($event)" placeholder="Search by '{codebase} {#.#.#}'" />
+                @change="searchVersions" placeholder="Search by '{codebase} {#.#.#}'" />
           </div>
         
           <div class="form-check form-switch">
@@ -366,7 +366,7 @@ const getIssueUrl = (issueNumber: string) => {
   return `https://dealeron.atlassian.net/browse/${issueNumber}`;
 }
 
-function searchVersions(event: InputEvent) {
+function searchVersions(event: Event) {
   const elem = event.target as HTMLInputElement;
   if (elem.value.length > 2) {
     fetchVersions(elem.value);
