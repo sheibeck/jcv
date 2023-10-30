@@ -17,7 +17,12 @@
   </div>
   
   <div class="row" v-if="component?.CodeBases">
-    <div class="col">        
+    <div class="col">
+      <div class="p-2 me-0">
+        <span class="h3">Jira Tickets</span>
+        <div class="small">Tickets with Integrating status by Repository</div>
+      </div>
+      <hr />
       <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
         <div class="h4 border-bottom">
           {{codebase.Name}}
