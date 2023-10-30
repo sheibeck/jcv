@@ -51,8 +51,13 @@
               <i title="Showing last 15 versions." class="fa-solid fa-circle-question"></i>
             </sup>
           </div>
+
+          <div class="form-group ms-auto p-1">
+              <input type="text" class="form-control" id="team" aria-describedby="searchHelp" 
+                @change="searchVersions($event)" placeholder="Search by '{codebase} {#.#.#}'" />
+          </div>
         
-          <div class="form-check form-switch ms-auto">
+          <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
               :checked="showReleasedVersions"
               @click="toggleReleasedVersions()">
@@ -65,12 +70,12 @@
           
         </div>
       </div>
-      <div class="d-flex border-bottom pb-2 mb-2">            
+      <div class="d-flex border-bottom pb-2 mb-2">
         <div class="form-floating mx-1">
           <input id="version" ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" placeholder="#.##.#">
           <label for="version">Version #:</label>
         </div>            
-        <div class="form-floating mx-1">                  
+        <div class="form-floating mx-1">
           <input id="codeBase" ref="versionCodeBase" type="text" class="form-control" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
           <label for="codeBase">CodeBaseKey:</label>
         </div>  
@@ -141,7 +146,6 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { UserSettings } from "./UserSettings";
 import Settings from "./components/Settings.vue";
-import VersionCompare from "./VersionSort";
 import { fetchAllItems, deleteItem, saveItem, saveAllItems } from "./CosmosDb";
 
 const settings = ref(new UserSettings());
@@ -167,7 +171,7 @@ const getBoardDisplayName = computed(() => {
 const getIssues = async function() {    
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
   
-  //sort the issues list and then create the component/codebases  
+  //put issues into code bases
   issueList.forEach( (issue: any) => {
     if ( !component.value.CodeBases.find( (cb: CodeBase) => cb.Name == issue.CodeBase ) ) {
       component.value.AddCodeBase(new CodeBase(issue.CodeBase));
@@ -225,8 +229,8 @@ const addVersion = async function() {
     return;
   }
 
-  if (version.Number === "")  {
-    sendMessage("You must include a version number");
+  if (!isValidVersionNumber(version.Number))  {
+    sendMessage("You must include a valid version number in the format of #.#.#");
     return;
   }
 
@@ -247,6 +251,14 @@ const addVersion = async function() {
   versions.value.unshift(version);
 
   sendMessage(`Version ${version.Number} added ${version.CodeBase}`);
+}
+
+function isValidVersionNumber(version: string): boolean {
+  // Define a regular expression pattern to match the version format
+  const versionPattern = /^\d+\.\d+\.\d+$/;
+
+  // Use the test method to check if the string matches the pattern
+  return versionPattern.test(version);
 }
 
 const removeVersion = async(versionNumber: string, codeBase: string) =>{
@@ -271,7 +283,7 @@ const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
   const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
     let output = `${settings.value?.SlackGroup}\r\n`;
-    output += `${v.CodeBase} ${v.Number}\r\n`;
+    output += `${v.FullVersion}\r\n`;
     v.Issues.forEach( (issue) => {
       output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\r\n`;
     });
@@ -288,20 +300,20 @@ const copyVersionForExcel = function(versionNumber: string, codeBase: string) {
   const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
     const hasSev = v.Issues.findIndex(i => i.IsSev) > -1;
-    let output = `v${v.Number}\t`;                  //A
-    output += `${v.Number}+?\t`;                    //B
-    output += `${"PI?"}\t`;                         //C
-    output += `\t`;                                 //D
-    output += `${getFormattedDate().toString()}\t`  //E
-    output += `Regular\t`                           // F
-    output += `${ hasSev ? "SEV" : ""}\t"`;         // G
+    let output = `v${v.Number}\t`;
+    output += `${v.Number}+?\t`;
+    output += `${"PI?"}\t`;
+    output += `\t`;
+    output += `${getFormattedDate().toString()}\t`
+    output += `Regular\t`
+    output += `${ hasSev ? "SEV" : ""}\t"`;
 
     //H
     v.Issues.forEach( (issue) => {
       output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\n`;
     });
 
-    output += `"\t${hasSev ? "Yes" : "No"}`;        //I
+    output += `"\t${hasSev ? "Yes" : "No"}`;
 
     // Copy the text inside the text field
     navigator.clipboard.writeText(output);
@@ -344,8 +356,8 @@ const versionListChanged = async () => {
     await saveAllItems(versions.value);   
 }
 
-const fetchAllVersions = async(includeReleased: boolean) => {
-  const versionList = await fetchAllItems(settings.value.TeamName, includeReleased);
+const fetchAllVersions = async(includeReleased: boolean, searchText?: string) => {
+  const versionList = await fetchAllItems(settings.value.TeamName, includeReleased, searchText);
   versions.value = versionList;
   getIssues();
 }
@@ -354,8 +366,18 @@ const getIssueUrl = (issueNumber: string) => {
   return `https://dealeron.atlassian.net/browse/${issueNumber}`;
 }
 
-async function fetchVersions() {
-  await fetchAllVersions(showReleasedVersions.value);
+function searchVersions(event: InputEvent) {
+  const elem = event.target as HTMLInputElement;
+  if (elem.value.length > 2) {
+    fetchVersions(elem.value);
+  }
+  else {
+    fetchVersions();
+  }
+}
+
+async function fetchVersions(search? : string) {
+  await fetchAllVersions(showReleasedVersions.value, search);
   getIssues();
 }
 

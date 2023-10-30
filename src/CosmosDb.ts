@@ -9,22 +9,29 @@ const containerName = "versions";
 const { database } = await client.databases.createIfNotExists({ id: dbname });
 const { container } = await database.containers.createIfNotExists({ id: containerName });
 
-const fetchAllItems = async (team: string, includeReleased?: boolean) => {
-    let query = `SELECT TOP 20 * from c WHERE c.Team = '${team}' AND c.Released = false ORDER BY c.Number asc`;
+const fetchAllItems = async (team: string, includeReleased?: boolean, searchIssue?: string) => {
+    // adding 1=1 allows us to add AND clauses without checking if the first one exists
+    let query = `SELECT TOP 15 * from c WHERE c.Team = '${team}' AND 1=1`;
 
-    if (includeReleased) {
-        query = `SELECT TOP 20 * from c WHERE c.Team = '${team}' ORDER BY c.Number asc`;
+    if (searchIssue) {
+        query += ` AND c.FullVersion Like '%${searchIssue}%'`;
     }
 
-    const versions: any = await container.items
+    if (!includeReleased) {
+        query += ` AND c.Released = false`;
+    }
+
+    query += ` ORDER BY c.Major desc, c.Minor desc, c.Revision desc`;
+
+    const { resources } = await container.items
         .query(query)
         .fetchAll();
 
     var versionList = new Array<Version>();
 
-    versions.resources.forEach((version: any) => {
+    for(const version of resources) {
         versionList.push(version as Version);
-    });
+    };
 
     return versionList;
 }

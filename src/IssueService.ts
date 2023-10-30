@@ -10,6 +10,10 @@ export class IssueService {
         return new Promise((resolve, reject) => {
             const rawToken: string = import.meta.env.VITE_JIRA_TOKEN;
             const token = btoa(rawToken);
+            // corsproxy.io is used to get around CORS issues for running locally and accessing 
+            // Jira since I don't have access to update Jira to allow this in non-local environments
+            // Also, we currently use a combination of email:apikey for the token and should
+            // probably change this to use OAuth instead.
             const url = 'https://corsproxy.io/?' + encodeURIComponent(this.getJiraUrl(boardNumber));
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
