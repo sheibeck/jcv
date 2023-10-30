@@ -19,11 +19,17 @@
   <div class="row" v-if="component?.CodeBases">
     <div class="col">
       <div class="p-2 me-0">
-        <span class="h3">Jira Tickets</span>
-        <div class="small">Tickets with Integrating status by Repository</div>
+        <span class="h3">Jira Sub-tasks</span>
+        <div class="small">Sub-tasks with Integrating status by Repository</div>
       </div>
       <hr />
-      <div v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
+      <div v-if="component.CodeBases.length == 0">
+        <span class="h5 bg-warn">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
+        <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
+          <i class="fas"></i>
+        </button>
+      </div>
+      <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
         <div class="h4 border-bottom">
           {{codebase.Name}}
         </div>        
@@ -57,11 +63,16 @@
             </sup>
           </div>
 
-          <div class="form-group ms-auto p-1">
-              <input type="text" class="form-control" id="team" aria-describedby="searchHelp" 
-                @change="searchVersions" placeholder="Search by '{codebase} {#.#.#}'" />
+          <div class="ms-auto">
+            <sup>
+              <i title="Search by '{codebase} {#.#.#}'" class="fa-solid fa-circle-question"></i>
+            </sup>
           </div>
-        
+          <div class="form-group input-group-sm p-1">
+            <input type="text" class="form-control" id="team" 
+              @change="searchVersions" placeholder="Search ..." />
+          </div>
+
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
               :checked="showReleasedVersions"
@@ -86,16 +97,19 @@
         </div>  
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
       </div>
-      <div v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
+      <div v-if="versions.length == 0">
+        <span class="h5 bg-warn">No Versions Found. Create one!</span>
+      </div>
+      <div v-else v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
         <div class="card-body p-0">
           <h5 class="card-title d-flex">
             <div>
               {{version.CodeBase}} {{version.Number}}
             </div>
             <div class="ms-auto">
-              <i class="fas pe-1" @click="removeVersion(version.Number, version.CodeBase)"></i>
-              <i class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)"></i>
-              <i class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)"></i>
+              <i role="button" class="fas pe-1" @click="removeVersion(version.Number, version.CodeBase)" title="Delete this version"></i>
+              <i role="button" class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)" title="Export Version for Slack"></i>
+              <i role="button" class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)" title="Export Versoin for Excel"></i>
             </div>
           </h5>
           <h6 class="card-subtitle text-muted col d-flex">
