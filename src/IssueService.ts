@@ -61,8 +61,9 @@ export class IssueService {
             const isPbi = false;
             const isSev = priorityText.toLowerCase().indexOf("sev") > -1;
             const summary = issue.fields.summary;
+            const issueType = issue.fields.issuetype.name;
                 
-            const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev, summary)
+            const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev, issueType, summary)
             issueList.push(ticket);        
         });
 

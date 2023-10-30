@@ -24,7 +24,7 @@
       </div>
       <hr />
       <div v-if="component.CodeBases.length == 0">
-        <span class="h5 bg-warn">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
+        <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
           <i class="fas"></i>
         </button>
@@ -43,8 +43,9 @@
             <div class="border m-1 p-1">
               <div class="bg-gray">
                 {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
-                <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
+                <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
+                  <i v-if="element.IsSev" :title="element.Priority" class="badge bg-secondary small ms-1">sev</i>
+                  <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning small ms-1">regression</i>
               </div>
               <small>{{element.Summary}}</small>
             </div>
@@ -98,7 +99,7 @@
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
       </div>
       <div v-if="versions.length == 0">
-        <span class="h5 bg-warn">No Versions Found. Create one!</span>
+        <span class="h5">No Versions Found. Create one!</span>
       </div>
       <div v-else v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
         <div class="card-body p-0">
@@ -139,8 +140,9 @@
               <div class="border m-1 p-1">
                 <div class="bg-gray">
                   {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
-                  <i v-if="element.IsPbi" title="pbi" class="fa-solid fa-triangle-exclamation p-1"></i>
-                  <i v-if="element.IsSev" :title="element.Priority" class="fa-solid fa-circle-exclamation p-1"></i>
+                  <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
+                  <i v-if="element.IsSev" :title="element.Priority" class="badge bg-secondary small ms-1">sev</i>
+                  <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning small ms-1">regression</i>
                 </div>
                 <small>{{element.Summary}}</small>
               </div>
@@ -186,6 +188,10 @@ const getBoardNumber = computed(() => {
 const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
+
+const isRegression = (issue: any) => {
+  return issue.IssueType === "Regression";
+}
 
 const getIssues = async function() {    
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
@@ -304,7 +310,7 @@ const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
     let output = `${settings.value?.SlackGroup}\r\n`;
     output += `${v.FullVersion}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\r\n`;
+      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""}\r\n`;
     });
     output += `\r\n`;
 
