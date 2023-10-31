@@ -53,7 +53,7 @@
             </sup>
           </div>
           <div class="form-group input-group-sm p-1 input-with-clear">
-            <input v-model="searchInputText" type="text" class="form-control" id="team" 
+            <input v-uppercaseDirective v-model="searchInputText" type="text" class="form-control" id="team" 
               @change="searchVersions" placeholder="Search ..." aria-describedby="searchHelp" />
               <span role="button" class="clear-button" @click="clearInput">×</span>
           </div>
@@ -83,7 +83,11 @@
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
       </div>
       <div v-if="versions.length == 0">
-        <span class="h5">No Versions Found. Create one!</span>
+        <span class="h5">No Versions Found. Create one or try fetching again.
+          <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="fetchVersions()">
+          <i class="fas"></i>
+          </button>
+        </span>
       </div>
       <div v-else v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
         <div class="card-body p-0">
@@ -118,7 +122,7 @@
     </div>
   </div>
 
-  <Settings v-if="isLoaded" :showSettings="showSettings" @closeSettings="showSettings=false" @saveSettings="saveSettings" :userSettings="settings"></Settings>
+  <Settings v-if="isLoaded" :showSettings="showSettings" @closeSettings="showSettings=false" @saveSettings="saveUserSettings" :userSettings="settings"></Settings>
 </template>
 
 <script setup lang="ts">
@@ -127,14 +131,14 @@ import { Component } from "@/Component";
 import { CodeBase } from "@/CodeBase";
 import { Version } from "@/Version";
 import { IssueService } from "@/IssueService";
-import { UserSettings } from "@/UserSettings";
+import { UserSettings, fetchSettings, isSettingsValid, saveSettings } from "@/UserSettings";
 import Settings from "@/components/Settings.vue";
 import { fetchAllItems, saveItem, saveAllItems } from "@/CosmosDb";
 import DraggableIssueList from "@/components/DraggableIssueList.vue";
 import ActionButtons from "./components/Actionbuttons.vue";
 import { sendMessage } from "@/UserMessageService";
 
-const settings = ref(new UserSettings());
+const settings = ref<UserSettings>(new UserSettings());
 const component = ref();
 const newVersionNumber = ref();
 const versionCodeBase = ref();
@@ -274,14 +278,24 @@ async function fetchVersions(search? : string) {
   getIssues();
 }
 
-function saveSettings() {
-  if (!settings.value || !settings.value.isValid()) {
+function saveUserSettings() {
+  if (!settings.value || !isSettingsValid(settings.value)) {
     console.error("Settings not initialized.");
     return;
   }
 
+  if (!settings.value.Email) {
+    sendMessage("You must enter your DealerOn email.");
+    return;
+  }
+
+  if (!settings.value.ApiKey) {
+    sendMessage("You must enter your Jira api key.");
+    return;
+  }
+
   if (!settings.value.TeamName) {
-    alert("You must enter a team name.");
+    sendMessage("You must enter a team name.");
     return;
   }
   else {
@@ -289,11 +303,11 @@ function saveSettings() {
   }
 
   if (!settings.value.BoardNumber) {
-    alert("You must enter a board number.");
+    sendMessage("You must enter a board number.");
     return;
   }
-  
-  settings.value.saveSettings();
+
+  saveSettings(settings.value);
   showSettings.value = false;
   fetchVersions();
 
@@ -301,9 +315,9 @@ function saveSettings() {
 }
 
 onMounted(async () => {
-  settings.value.fetchSettings();
+  settings.value = fetchSettings();
 
-  if (!settings.value.isValid()) {
+  if (!isSettingsValid(settings.value)) {
     showSettings.value = true;
   }
   else {

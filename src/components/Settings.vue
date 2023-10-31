@@ -10,8 +10,18 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input v-if="userSettings !== undefined" type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter e-mail" v-model="userSettings.Email">
+                        <small id="emailHelp" class="form-text text-muted">DealerOn e-mail address</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="apiKey">Jira Api Key</label>
+                        <input v-if="userSettings !== undefined" type="text" class="form-control" id="apiKey" aria-describedby="apiKeyHelp" placeholder="Enter Jira api key" v-model="userSettings.ApiKey">
+                        <small id="apiKeyHelp" class="form-text text-muted">Jira Api Key <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank"><i class="fas"></i></a></small>
+                    </div>
+                    <div class="form-group">
                         <label for="team">Team</label>
-                        <input v-if="userSettings !== undefined" type="text" class="form-control" id="team" aria-describedby="teamHelp" placeholder="Enter name" v-model="userSettings.TeamName">
+                        <input v-if="userSettings !== undefined" v-uppercase type="text" class="form-control" id="team" aria-describedby="teamHelp" placeholder="Enter name" v-model="userSettings.TeamName">
                         <small id="teamHelp" class="form-text text-muted">Three character team name: C2C, B2C, TNT, etc</small>
                     </div>
                     <div class="form-group">
@@ -32,6 +42,7 @@
 </template>
 <script setup lang="ts">
     import { UserSettings } from '@/UserSettings';
+import { onBeforeUnmount, onMounted } from 'vue';
 
     const props = defineProps({
         showSettings: Boolean,
@@ -43,7 +54,6 @@
     const handleSaveSettings = () => {
         emits("saveSettings");
     };
-
 </script>
 <style scoped>
     .show {
