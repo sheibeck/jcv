@@ -33,24 +33,7 @@
         <div class="h4 border-bottom">
           {{codebase.Name}}
         </div>        
-        <draggable 
-          @change="issueListChanged"
-          v-model="codebase.Issues" 
-          class="border version-drop bg-white p-1"
-          group="version"
-          item-key="Number">
-          <template #item="{element}">
-            <div class="border m-1 p-1">
-              <div class="bg-gray">
-                {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
-                <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
-                  <i v-if="element.IsSev" :title="element.Priority" class="badge bg-secondary small ms-1">sev</i>
-                  <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning small ms-1">regression</i>
-              </div>
-              <small>{{element.Summary}}</small>
-            </div>
-          </template>
-        </draggable>
+       <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues"></DraggableIssueList>
       </div>
     </div>
 
@@ -108,9 +91,7 @@
               {{version.CodeBase}} {{version.Number}}
             </div>
             <div class="ms-auto">
-              <i role="button" class="fas pe-1" @click="removeVersion(version.Number, version.CodeBase)" title="Delete this version"></i>
-              <i role="button" class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)" title="Export Version for Slack"></i>
-              <i role="button" class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)" title="Export Versoin for Excel"></i>
+              <ActionButtons  :versions="versions" :version="version" :getIssues="getIssues" :settings="settings" ></ActionButtons>
             </div>
           </h5>
           <h6 class="card-subtitle text-muted col d-flex">
@@ -130,24 +111,7 @@
               <label class="form-check-label">Released</label>
             </div>
           </h6>
-          <draggable 
-            @change="versionListChanged"              
-            v-model="version.Issues" 
-            class="card-text border version-drop bg-white p-1"
-            group="version"               
-            item-key="Number">
-            <template #item="{element}">
-              <div class="border m-1 p-1">
-                <div class="bg-gray">
-                  {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
-                  <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
-                  <i v-if="element.IsSev" :title="element.Priority" class="badge bg-secondary small ms-1">sev</i>
-                  <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning small ms-1">regression</i>
-                </div>
-                <small>{{element.Summary}}</small>
-              </div>
-            </template>
-          </draggable>
+          <DraggableIssueList :handler="versionListChanged" :issues="version.Issues"></DraggableIssueList>
         </div>
       </div>
     </div>
@@ -158,16 +122,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed} from "vue";
-import { Component } from "./Component";
-import { CodeBase } from "./CodeBase";
-import { Version } from "./Version";
-import { IssueService } from "./IssueService";
-import draggable from 'vuedraggable';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-import { UserSettings } from "./UserSettings";
-import Settings from "./components/Settings.vue";
-import { fetchAllItems, deleteItem, saveItem, saveAllItems } from "./CosmosDb";
+import { Component } from "@/Component";
+import { CodeBase } from "@/CodeBase";
+import { Version } from "@/Version";
+import { IssueService } from "@/IssueService";
+import { UserSettings } from "@/UserSettings";
+import Settings from "@/components/Settings.vue";
+import { fetchAllItems, saveItem, saveAllItems } from "@/CosmosDb";
+import DraggableIssueList from "@/components/DraggableIssueList.vue";
+import ActionButtons from "./components/Actionbuttons.vue";
+import { sendMessage } from "@/UserMessageService";
 
 const settings = ref(new UserSettings());
 const component = ref();
@@ -189,9 +153,7 @@ const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
 
-const isRegression = (issue: any) => {
-  return issue.IssueType === "Regression";
-}
+
 
 const getIssues = async function() {    
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
@@ -235,16 +197,6 @@ const toggleReleasedVersions = () => {
   fetchAllVersions(showReleasedVersions.value);
 }
 
-const getVersionListByFilter = function() { 
-  if (showReleasedVersions.value) {
-    return versions.value;
-  }
-  else {
-    const vs = versions.value.filter( v => v.Released === false || v.Released == null || v.Released == undefined );  
-    return vs;
-  }
-}
-
 const addVersion = async function() {  
   const version = new Version(settings.value.TeamName, newVersionNumber.value.value, versionCodeBase.value.value);
 
@@ -286,89 +238,6 @@ function isValidVersionNumber(version: string): boolean {
   return versionPattern.test(version);
 }
 
-const removeVersion = async(versionNumber: string, codeBase: string) =>{
-  const verifyDelete = window.confirm("Are you sure you want to delete this version?");
-  if (verifyDelete) {
-    const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase === codeBase);
-    if (v) {
-      var index = versions.value.indexOf(v);
-      if (index > -1) {
-        versions.value.splice(index, 1);
-      }
-  
-      await deleteItem(v);
-    }
-    getIssues();
-
-    sendMessage(`Version ${versionNumber} deleted from ${codeBase}`);
-  }  
-}
-
-const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
-  const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
-  if (v) {
-    let output = `${settings.value?.SlackGroup}\r\n`;
-    output += `${v.FullVersion}\r\n`;
-    v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""}\r\n`;
-    });
-    output += `\r\n`;
-
-    // Copy the text inside the text field
-    navigator.clipboard.writeText(output);
-
-    sendMessage("copied for Slack");
-  }
-}
-
-const copyVersionForExcel = function(versionNumber: string, codeBase: string) {
-  const v = versions.value.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
-  if (v) {
-    const hasSev = v.Issues.findIndex(i => i.IsSev) > -1;
-    let output = `v${v.Number}\t`;
-    output += `${v.Number}+?\t`;
-    output += `${"PI?"}\t`;
-    output += `\t`;
-    output += `${getFormattedDate().toString()}\t`
-    output += `Regular\t`
-    output += `${ hasSev ? "SEV" : ""}\t"`;
-
-    //H
-    v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}\n`;
-    });
-
-    output += `"\t${hasSev ? "Yes" : "No"}`;
-
-    // Copy the text inside the text field
-    navigator.clipboard.writeText(output);
-
-    sendMessage("copied for Excel");
-  }
-}
-
-function getFormattedDate() {
-  const date = new Date();
-  var year = date.getFullYear();
-
-  var month = (1 + date.getMonth()).toString();
-  month = month.length > 1 ? month : '0' + month;
-
-  var day = date.getDate().toString();
-  day = day.length > 1 ? day : '0' + day;
-  
-  return month + '/' + day + '/' + year;
-}
-
-const sendMessage = function (message: string) {
-  toast( message, {
-      autoClose: 2000,
-      style: {
-        zIndex: 999999,
-      },
-    })
-}
-
 function issueListChanged(){
   //alert("issue list changed");
 }
@@ -385,10 +254,6 @@ const fetchAllVersions = async(includeReleased: boolean, searchText?: string) =>
   const versionList = await fetchAllItems(settings.value.TeamName, includeReleased, searchText);
   versions.value = versionList;
   getIssues();
-}
-
-const getIssueUrl = (issueNumber: string) => {
-  return `https://dealeron.atlassian.net/browse/${issueNumber}`;
 }
 
 function searchVersions(event: Event) {
