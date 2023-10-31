@@ -276,6 +276,8 @@ function searchVersions() {
 async function fetchVersions(search? : string) {
   await fetchAllVersions(showReleasedVersions.value, search);
   getIssues();
+
+  sendMessage("Fetched versions.");
 }
 
 function saveUserSettings() {
