@@ -42,7 +42,6 @@
 </template>
 <script setup lang="ts">
     import { UserSettings } from '@/UserSettings';
-import { onBeforeUnmount, onMounted } from 'vue';
 
     const props = defineProps({
         showSettings: Boolean,

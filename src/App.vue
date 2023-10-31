@@ -139,6 +139,7 @@ import { fetchAllItems, saveItem, saveAllItems } from "@/CosmosDb";
 import DraggableIssueList from "@/components/DraggableIssueList.vue";
 import ActionButtons from "./components/Actionbuttons.vue";
 import { sendMessage } from "@/UserMessageService";
+import { hasValue } from "@/Utils";
 
 const settings = ref<UserSettings>(new UserSettings());
 const component = ref();
@@ -323,10 +324,6 @@ function saveUserSettings() {
   fetchVersions();
 
   sendMessage("Saved settings.");
-}
-
-function hasValue(value: string) {
-  return value?.length > 0;
 }
 
 onMounted(async () => {

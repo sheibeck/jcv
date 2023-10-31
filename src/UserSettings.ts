@@ -1,3 +1,5 @@
+import { hasValue } from "@/Utils";
+
 export class UserSettings {
     Email: string = "";
     ApiKey: string = "";
@@ -30,10 +32,10 @@ export const saveSettings = (userSettings: UserSettings)  => {
 }
 
 export const isSettingsValid = (userSettings: UserSettings) => {
-    if (userSettings.TeamName?.length === 0) return false;
-    if (userSettings.BoardNumber?.length === 0) return false;
-    if (userSettings.ApiKey?.length === 0) return false;
-    if (userSettings.Email?.length === 0) return false;
+    if (!hasValue(userSettings.TeamName)) return false;
+    if (!hasValue(userSettings.BoardNumber)) return false;
+    if (!hasValue(userSettings.ApiKey)) return false;
+    if (!hasValue(userSettings.Email)) return false;
     
     return true;
 }
