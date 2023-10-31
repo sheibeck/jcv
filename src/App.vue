@@ -167,7 +167,7 @@ const getBoardDisplayName = computed(() => {
 
 const getIssues = async function() {
   component.value.CodeBases = new Array<CodeBase>();
-  
+
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
   
   //put issues into code bases
@@ -285,22 +285,22 @@ async function fetchVersions(search? : string) {
 }
 
 function saveUserSettings() {
-  if (!settings.value || !isSettingsValid(settings.value)) {
+  if (!settings.value) {
     console.error("Settings not initialized.");
     return;
   }
 
-  if (!settings.value.Email) {
+  if (!hasValue(settings.value.Email)) {
     sendMessage("You must enter your DealerOn email.");
     return;
   }
 
-  if (!settings.value.ApiKey) {
+  if (!hasValue(settings.value.ApiKey)) {
     sendMessage("You must enter your Jira api key.");
     return;
   }
 
-  if (!settings.value.TeamName) {
+  if (!hasValue(settings.value.TeamName)) {
     sendMessage("You must enter a team name.");
     return;
   }
@@ -308,8 +308,13 @@ function saveUserSettings() {
     component.value = new Component(settings.value.TeamName);
   }
 
-  if (!settings.value.BoardNumber) {
+  if (!hasValue(settings.value.BoardNumber)) {
     sendMessage("You must enter a board number.");
+    return;
+  }
+
+  if (!isSettingsValid(settings.value)) {
+    sendMessage("You must enter valid settings.");
     return;
   }
 
@@ -318,6 +323,10 @@ function saveUserSettings() {
   fetchVersions();
 
   sendMessage("Saved settings.");
+}
+
+function hasValue(value: string) {
+  return value?.length > 0;
 }
 
 onMounted(async () => {
