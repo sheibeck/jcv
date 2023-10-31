@@ -6,9 +6,6 @@
         <div class="h4 pt-1">
           {{getBoardDisplayName}}
         </div>
-        <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
-          <i class="fas"></i>
-        </button>
         <button class="btn btn-sm btn-secondary m-1" title="settings" @click="toggleShowSettings">
           <i class="fas"></i>
         </button>
@@ -19,7 +16,12 @@
   <div class="row" v-if="component?.CodeBases">
     <div class="col">
       <div class="p-2 me-0">
-        <div class="h3 mb-0" aria-describedby="subtaskHelp">Jira Sub-tasks</div>
+        <div class="h3 mb-0" aria-describedby="subtaskHelp">
+          Jira Sub-tasks
+          <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
+            <i class="fas"></i>
+          </button>
+        </div>
         <small id="subtaskHelp">Sub-tasks with Integrating status by Repository</small>
       </div>
       <hr class="mt-0" />
@@ -163,7 +165,9 @@ const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
 
-const getIssues = async function() {    
+const getIssues = async function() {
+  component.value.CodeBases = new Array<CodeBase>();
+  
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
   
   //put issues into code bases
@@ -180,7 +184,7 @@ const getIssues = async function() {
 
 const refreshButtonHandler = function() {
   getIssues();
-  sendMessage("Refreshed issues from Jira.");
+  sendMessage("Refreshed sub-tasks from Jira.");
 }
 
 const handleVersionedIssues = function() { 
