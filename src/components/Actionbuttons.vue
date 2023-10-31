@@ -14,7 +14,7 @@
 import type { Version } from "@/Version";
 import { deleteItem } from "@/CosmosDb";
 import { sendMessage } from "@/UserMessageService";
-import { isRegression } from "@/Utils";
+import { getIssueUrl, isRegression } from "@/Utils";
 import type { UserSettings } from "@/UserSettings";
 
 const props = defineProps<{
@@ -48,7 +48,7 @@ const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
     let output = `${props.settings?.SlackGroup}\r\n`;
     output += `${v.FullVersion}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `${issue.Number}${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""}\r\n`;
+      output += `[${issue.Number}](${getIssueUrl(issue.Number)}) - ${issue.Summary} ${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""} \r\n`;
     });
     output += `\r\n`;
 

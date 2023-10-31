@@ -22,14 +22,11 @@
 import draggable from 'vuedraggable';
 import type { JiraTicket } from '@/JiraTicket';
 import { isRegression } from '@/Utils';
+import { getIssueUrl } from '@/Utils';
 
 const props = defineProps<{
     handler: any;
     issues: Array<JiraTicket>
 }>();
-
-const getIssueUrl = (issueNumber: string) => {
-  return `https://dealeron.atlassian.net/browse/${issueNumber}`;
-}
 
 </script>
