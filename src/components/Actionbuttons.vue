@@ -1,8 +1,15 @@
 <template>
-    <i role="button" class="fas pe-1" @click="removeVersion(version.Number, version.CodeBase)" title="Delete this version"></i>
-    <i role="button" class="fa-brands fa-slack pe-1" @click="copyVersionForSlack(version.Number, version.CodeBase)" title="Export Version for Slack"></i>
-    <i role="button" class="fa-regular fa-file-excel pe-1" @click="copyVersionForExcel(version.Number, version.CodeBase)" title="Export Versoin for Excel"></i>
+    <button type="button" class="btn btn-sm btn-primary me-2" @click="copyVersionForSlack(version.Number, version.CodeBase)" title="Export Version for Slack">
+      <i class="fa-brands fa-slack"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-secondary me-2" @click="copyVersionForExcel(version.Number, version.CodeBase)" title="Export Version for Excel">
+      <i class="fa-regular fa-file-excel"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-danger" @click="removeVersion(version.Number, version.CodeBase)" title="Delete this version">
+      <i role="button" class="fas"></i>
+    </button> 
 </template>
+
 <script setup lang="ts">
 import type { Version } from "@/Version";
 import { deleteItem } from "@/CosmosDb";

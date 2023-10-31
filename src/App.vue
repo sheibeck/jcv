@@ -19,10 +19,10 @@
   <div class="row" v-if="component?.CodeBases">
     <div class="col">
       <div class="p-2 me-0">
-        <span class="h3">Jira Sub-tasks</span>
-        <div class="small">Sub-tasks with Integrating status by Repository</div>
+        <div class="h3 mb-0" aria-describedby="subtaskHelp">Jira Sub-tasks</div>
+        <small id="subtaskHelp">Sub-tasks with Integrating status by Repository</small>
       </div>
-      <hr />
+      <hr class="mt-0" />
       <div v-if="component.CodeBases.length == 0">
         <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
@@ -41,29 +41,29 @@
       <div class="row">
         <div class="d-flex">
           <div>
-            <span class="h3">Versions</span>
+            <span class="h3" aria-describedby="versionHelp">Versions</span>
             <sup>
-              <i title="Showing last 15 versions." class="fa-solid fa-circle-question"></i>
+              <i title="Showing last 15 versions." class="fa-solid fa-circle-question" id="versionHelp"></i>
             </sup>
           </div>
 
           <div class="ms-auto">
             <sup>
-              <i title="Search by '{codebase} {#.#.#}'" class="fa-solid fa-circle-question"></i>
+              <i id="searchHelp" title="Search by '{codebase} {#.#.#}'" class="fa-solid fa-circle-question"></i>
             </sup>
           </div>
           <div class="form-group input-group-sm p-1">
             <input type="text" class="form-control" id="team" 
-              @change="searchVersions" placeholder="Search ..." />
+              @change="searchVersions" placeholder="Search ..." aria-describedby="searchHelp" />
           </div>
 
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
-              :checked="showReleasedVersions"
+              :checked="showReleasedVersions" aria-describedby="releasedHelp"
               @click="toggleReleasedVersions()">
             <label class="form-check-label mt-1" for="showReleased">Released?
               <sup>
-                <i title="Show released versions" class="fa-solid fa-circle-question"></i>
+                <i id="releasedHelp" title="Show released versions" class="fa-solid fa-circle-question"></i>
               </sup>
             </label>
           </div>                  
@@ -96,9 +96,9 @@
           </h5>
           <h6 class="card-subtitle text-muted col d-flex">
             <div class="form-check me-4">
-              <input type="checkbox" class="form-check-input" v-model="version.IsPlanned" @change="updateVersion(version)">
+              <input type="checkbox" class="form-check-input" v-model="version.IsPlanned" @change="updateVersion(version)" aria-describedby="plannedHelp">
               <label class="form-check-label">Planned<sup>
-                  <i title="This build has been sent to integration as a build plan." class="fa-solid fa-circle-question"></i>
+                  <i id="plannedHelp" title="This build has been sent to integration as a build plan." class="fa-solid fa-circle-question"></i>
                 </sup>
               </label>
             </div>
@@ -313,18 +313,6 @@ onMounted(async () => {
 </script>
 
 <style>
-.fa-triangle-exclamation {
-  color: gold;
-}
-
-.fa-circle-exclamation {
-  color: darkred;
-}
-
-.fa-code-merge {
-  color: green;
-}
-
 .version-drop {
   min-height: 100px;  
 }
