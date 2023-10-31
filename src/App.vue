@@ -41,7 +41,7 @@
       <div class="row">
         <div class="d-flex">
           <div>
-            <span class="h3" aria-describedby="versionHelp">Versions</span>
+            <span class="h3" aria-describedby="versionHelp" aria-label="">Versions</span>
             <sup>
               <i title="Showing last 15 versions." class="fa-solid fa-circle-question" id="versionHelp"></i>
             </sup>
@@ -52,9 +52,10 @@
               <i id="searchHelp" title="Search by '{codebase} {#.#.#}'" class="fa-solid fa-circle-question"></i>
             </sup>
           </div>
-          <div class="form-group input-group-sm p-1">
-            <input type="text" class="form-control" id="team" 
+          <div class="form-group input-group-sm p-1 input-with-clear">
+            <input v-model="searchInputText" type="text" class="form-control" id="team" 
               @change="searchVersions" placeholder="Search ..." aria-describedby="searchHelp" />
+              <span role="button" class="clear-button" @click="clearInput">×</span>
           </div>
 
           <div class="form-check form-switch">
@@ -142,8 +143,13 @@ const showReleasedVersions = ref(false);
 const issueService = new IssueService();
 const showSettings = ref(false);
 const isLoaded = ref(false);
+const searchInputText = ref("");
 
 const toggleShowSettings = () => showSettings.value = !showSettings.value;
+const clearInput = () => { 
+  searchInputText.value = "";
+  searchVersions();
+};
 
 const getBoardNumber = computed(() => {
   return settings.value?.BoardNumber ?? "0";
@@ -152,8 +158,6 @@ const getBoardNumber = computed(() => {
 const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
-
-
 
 const getIssues = async function() {    
   const issueList: any = await issueService.GetIssues(getBoardNumber.value);
@@ -256,10 +260,9 @@ const fetchAllVersions = async(includeReleased: boolean, searchText?: string) =>
   getIssues();
 }
 
-function searchVersions(event: Event) {
-  const elem = event.target as HTMLInputElement;
-  if (elem.value.length > 2) {
-    fetchVersions(elem.value);
+function searchVersions() {
+  if (searchInputText.value.length > 0) {
+    fetchVersions(searchInputText.value);
   }
   else {
     fetchVersions();
@@ -327,4 +330,25 @@ onMounted(async () => {
   border-radius: 20px;
 }
 
-</style>./IssueService./UserSettings
+.input-with-clear {
+  position: relative;
+}
+
+.input-with-clear input {
+  padding-right: 25px; /* Leave space for the "x" button */
+}
+
+.clear-button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  color: #ccc;
+}
+
+.clear-button:hover {
+  color: #000;
+}
+</style>
