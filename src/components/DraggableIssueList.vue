@@ -8,7 +8,9 @@
         <template #item="{element}">
         <div class="border m-1 p-1">
             <div class="bg-gray">
-            {{ element.Number }} <a :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
+            {{ element.Number }} 
+                <a class="ms-2" :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>
+                <a class="ms-2" :href="getIssueBranchUrl(element.Number)" target="_blank" :title="`${element.Number} Branch`"><i class="fas"></i></a>
                 <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
                 <i v-if="element.IsSev" :title="element.Priority" class="badge bg-secondary small ms-1">sev</i>
                 <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning small ms-1">regression</i>
@@ -28,5 +30,7 @@ const props = defineProps<{
     handler: any;
     issues: Array<JiraTicket>
 }>();
+
+const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/C2C/_git/VHCLIAA?version=GB${issueNumber}`;
 
 </script>

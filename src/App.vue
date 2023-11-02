@@ -32,10 +32,11 @@
         </button>
       </div>
       <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
-        <div class="h4 border-bottom">
+        <span class="h4 border-bottom">
           {{codebase.Name}}
-        </div>        
-       <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues"></DraggableIssueList>
+          <a :href="getCodeBaseRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i class="fas"></i></a>
+        </span>
+        <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues"></DraggableIssueList>
       </div>
     </div>
 
@@ -63,14 +64,14 @@
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showReleased" 
               :checked="showReleasedVersions" aria-describedby="releasedHelp"
+              v-model="showReleasedVersions"
               @click="toggleReleasedVersions()">
             <label class="form-check-label mt-1" for="showReleased">Released?
               <sup>
                 <i id="releasedHelp" title="Show released versions" class="fa-solid fa-circle-question"></i>
               </sup>
             </label>
-          </div>                  
-          
+          </div>
         </div>
       </div>
       <div class="d-flex border-bottom pb-2 mb-2">
@@ -166,6 +167,8 @@ const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
 
+const getCodeBaseRepoUrl = (repoName: string) => `https://dev.azure.com/dealeron/C2C/_git/${repoName}/branches`;
+
 const getIssues = async function() {
   component.value.CodeBases = new Array<CodeBase>();
 
@@ -207,7 +210,7 @@ const handleVersionedIssues = function() {
 
 const toggleReleasedVersions = () => {
   showReleasedVersions.value = !showReleasedVersions.value;
-  fetchAllVersions(showReleasedVersions.value);
+  fetchAllVersions();
 }
 
 const addVersion = async function() {  
@@ -260,26 +263,21 @@ const updateVersion = async (version: any) => {
 }
 
 const versionListChanged = async () => {
-    await saveAllItems(versions.value);   
+    await saveAllItems(versions.value);
 }
 
-const fetchAllVersions = async(includeReleased: boolean, searchText?: string) => {
-  const versionList = await fetchAllItems(settings.value.TeamName, includeReleased, searchText);
+const fetchAllVersions = async() => {
+  const versionList = await fetchAllItems(settings.value.TeamName, showReleasedVersions.value, (searchInputText.value.length > 2 ? searchInputText.value : ""));
   versions.value = versionList;
   getIssues();
 }
 
 function searchVersions() {
-  if (searchInputText.value.length > 0) {
-    fetchVersions(searchInputText.value);
-  }
-  else {
-    fetchVersions();
-  }
+  fetchVersions();
 }
 
-async function fetchVersions(search? : string) {
-  await fetchAllVersions(showReleasedVersions.value, search);
+async function fetchVersions() {
+  await fetchAllVersions();
   getIssues();
 
   sendMessage("Fetched versions.");
