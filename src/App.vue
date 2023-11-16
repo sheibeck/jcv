@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex navbar bg-light px-2 mb-1">
+  <div class="d-flex navbar bg-dark px-2 mb-1 border-bottom">
     <div class="flex-grow-1">
       <div class="h5">Jira Version Manager</div>
       <div class="d-flex p-1">
@@ -15,7 +15,7 @@
   
   <div class="row" v-if="component?.CodeBases">
     <div class="col">
-      <div class="p-2 me-0">
+      <div class="p-2 me-0 border-bottom">
         <div class="h3 mb-0" aria-describedby="subtaskHelp">
           Jira Sub-tasks
           <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
@@ -24,14 +24,13 @@
         </div>
         <small id="subtaskHelp">Sub-tasks with Integrating status by Repository</small>
       </div>
-      <hr class="mt-0" />
       <div v-if="component.CodeBases.length == 0">
         <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
           <i class="fas"></i>
         </button>
       </div>
-      <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-light">
+      <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-dark">
         <span class="h4 border-bottom">
           {{codebase.Name}}
           <a :href="getCodeBaseRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i class="fas"></i></a>
@@ -56,7 +55,7 @@
             </sup>
           </div>
           <div class="form-group input-group-sm p-1 input-with-clear">
-            <input v-uppercaseDirective v-model="searchInputText" type="text" class="form-control" id="team" 
+            <input v-uppercaseDirective v-model="searchInputText" type="text" class="form-control bg-dark" id="team" 
               @change="searchVersions" placeholder="Search ..." aria-describedby="searchHelp" />
               <span role="button" class="clear-button" @click="clearInput">×</span>
           </div>
@@ -76,11 +75,11 @@
       </div>
       <div class="d-flex border-bottom pb-2 mb-2">
         <div class="form-floating mx-1">
-          <input id="version" ref="newVersionNumber" type="text" class="form-control" aria-label="Version Number" placeholder="#.##.#">
+          <input id="version" ref="newVersionNumber" type="text" class="form-control bg-dark" aria-label="Version Number" placeholder="#.##.#">
           <label for="version">Version #:</label>
         </div>            
         <div class="form-floating mx-1">
-          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
+          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control bg-dark" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
           <label for="codeBase">CodeBaseKey:</label>
         </div>  
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
@@ -92,7 +91,7 @@
           </button>
         </span>
       </div>
-      <div v-else v-for="version in versions" v-bind:key="version.Number" class="card bg-light p-1 mb-1">
+      <div v-else v-for="version in versions" v-bind:key="version.Number" class="card bg-dark p-1 mb-1">
         <div class="card-body p-0">
           <h5 class="card-title d-flex">
             <div>
@@ -115,7 +114,7 @@
               <label class="form-check-label">Built</label>
             </div>
             <div class="form-check">
-              <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
+              <input type="checkbox" class="form-check-input bg-dark" v-model="version.Released" @change="updateVersion(version)">
               <label class="form-check-label">Released</label>
             </div>
           </h6>
