@@ -55,7 +55,7 @@
             </sup>
           </div>
           <div class="form-group input-group-sm p-1 input-with-clear">
-            <input v-uppercaseDirective v-model="searchInputText" type="text" class="form-control bg-dark" id="team" 
+            <input v-uppercaseDirective v-model="searchInputText" type="text" class="form-control bg-dark text-secondary" id="team" 
               @change="searchVersions" placeholder="Search ..." aria-describedby="searchHelp" />
               <span role="button" class="clear-button" @click="clearInput">×</span>
           </div>
@@ -75,11 +75,11 @@
       </div>
       <div class="d-flex border-bottom pb-2 mb-2">
         <div class="form-floating mx-1">
-          <input id="version" ref="newVersionNumber" type="text" class="form-control bg-dark" aria-label="Version Number" placeholder="#.##.#">
+          <input id="version" ref="newVersionNumber" type="text" class="form-control bg-dark text-secondary" aria-label="Version Number" placeholder="#.##.#">
           <label for="version">Version #:</label>
         </div>            
         <div class="form-floating mx-1">
-          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control bg-dark" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
+          <input id="codeBase" ref="versionCodeBase" type="text" class="form-control bg-dark text-secondary" aria-label="CodeBaseKey" value="" placeholder="CodeBaseKey">
           <label for="codeBase">CodeBaseKey:</label>
         </div>  
         <button type="button" class="btn btn-secondary" @click="addVersion()">Add</button>            
