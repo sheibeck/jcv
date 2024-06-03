@@ -22,8 +22,8 @@ export class IssueService {
             // Jira since I don't have access to update Jira to allow this in non-local environments
             // Also, we currently use a combination of email:apikey for the token and should
             // probably change this to use OAuth instead.
-            //const url = 'https://corsproxy.io/?' + encodeURIComponent(this.getJiraUrl(boardNumber));
-            const url = this.getJiraUrl(boardNumber);
+            const url = 'https://corsproxy.io/?' + encodeURIComponent(this.getJiraUrl(boardNumber));
+            //const url = this.getJiraUrl(boardNumber);
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${this.getJiraToken()}`);
