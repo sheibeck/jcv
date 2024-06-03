@@ -18,12 +18,8 @@ export class IssueService {
     private fetchIssues(boardNumber: string): any {
         return new Promise((resolve, reject) => {
             
-            // corsproxy.io is used to get around CORS issues for running locally and accessing 
-            // Jira since I don't have access to update Jira to allow this in non-local environments
-            // Also, we currently use a combination of email:apikey for the token and should
-            // probably change this to use OAuth instead.
-            const url = 'https://corsproxy.io/?' + encodeURIComponent(this.getJiraUrl(boardNumber));
-            //const url = this.getJiraUrl(boardNumber);
+            // running a custom cors proxy on heroku.
+            const url = 'https://jvc-cors-proxy-7bc908c62bc1.herokuapp.com/' + this.getJiraUrl(boardNumber);
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${this.getJiraToken()}`);
