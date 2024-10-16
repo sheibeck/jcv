@@ -74,7 +74,7 @@ const copyVersionForBuild = function(versionNumber: string, codeBase: string) {
     // Copy the text inside the text field
     navigator.clipboard.writeText(output);
 
-    sendMessage("copied for Integration.sh build");
+    sendMessage("copied for integrate.sh");
   }
 }
 
