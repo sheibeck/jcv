@@ -22,10 +22,15 @@
             <i class="fas"></i>
           </button>
         </div>
-        <small id="subtaskHelp">Sub-tasks with Integrating status by Repository</small>
+        <small id="subtaskHelp">Sub-tasks by repository with status</small>: 
+        <select v-model="subTaskStatus" :onchange="getIssues">
+          <option value="Integrating">Integrating</option>
+          <option value="Review">Review</option>
+          <option value="Regression Testing">Regression Testing</option>
+        </select>
       </div>
       <div v-if="component.CodeBases.length == 0">
-        <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">Integrating</span></span>  
+        <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">{{subTaskStatus}}</span></span>  
         <button type="button" class="btn btn-sm btn-secondary m-1" title="refresh board sub-tasks" @click="refreshButtonHandler()">
           <i class="fas"></i>
         </button>
@@ -151,6 +156,7 @@ const issueService = new IssueService();
 const showSettings = ref(false);
 const isLoaded = ref(false);
 const searchInputText = ref("");
+const subTaskStatus = ref("Integrating");
 
 const toggleShowSettings = () => showSettings.value = !showSettings.value;
 const clearInput = () => { 
@@ -171,7 +177,7 @@ const getCodeBaseRepoUrl = (repoName: string) => `https://dev.azure.com/dealeron
 const getIssues = async function() {
   component.value.CodeBases = new Array<CodeBase>();
 
-  const issueList: any = await issueService.GetIssues(getBoardNumber.value);
+  const issueList: any = await issueService.GetIssues(getBoardNumber.value, subTaskStatus.value);
   
   //put issues into code bases
   issueList.forEach( (issue: any) => {

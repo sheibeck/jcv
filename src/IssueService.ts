@@ -2,8 +2,8 @@ import { JiraTicket } from "./JiraTicket";
 import { fetchSettings, type UserSettings } from "./UserSettings";
 
 export class IssueService {
-    private getJiraUrl(boardNumber: string): string {
-        const url = `https://dealeron.atlassian.net/rest/agile/1.0/board/${boardNumber}/issue?jql=status%20=%20%27Integrating%27`;
+    private getJiraUrl(boardNumber: string, status: string = "Integrating"): string {
+        const url = `https://dealeron.atlassian.net/rest/agile/1.0/board/${boardNumber}/issue?jql=status%20=%20%27${status}%27`;
         return url;
     }
 
@@ -15,11 +15,11 @@ export class IssueService {
         return token;
     }
 
-    private fetchIssues(boardNumber: string): any {
+    private fetchIssues(boardNumber: string, status: string): any {
         return new Promise((resolve, reject) => {
             
             // running a custom cors proxy on heroku.
-            const url = 'https://jvc-cors-proxy-7bc908c62bc1.herokuapp.com/' + this.getJiraUrl(boardNumber);
+            const url = 'https://jvc-cors-proxy-7bc908c62bc1.herokuapp.com/' + this.getJiraUrl(boardNumber, status);
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${this.getJiraToken()}`);
@@ -53,9 +53,9 @@ export class IssueService {
         });
     }
 
-    async GetIssues(boardNumber: string): Promise<JiraTicket[]> {
+    async GetIssues(boardNumber: string, status: string): Promise<JiraTicket[]> {
        
-        const jiraIssues = await this.fetchIssues(boardNumber);
+        const jiraIssues = await this.fetchIssues(boardNumber, status);
 
         const issueList = new Array<JiraTicket>();
 

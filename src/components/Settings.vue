@@ -27,7 +27,7 @@
                     <div class="form-group">
                         <label for="boardNumber">Jira Board #</label>
                         <input v-if="userSettings !== undefined" type="text" class="form-control" id="boardNumber" aria-describedby="boardNumberHelp" placeholder="Enter board number" v-model="userSettings.BoardNumber">
-                        <small id="boardNumberHelp" class="form-text text-muted">A jira board that has tickets with status Integrating</small>
+                        <small id="boardNumberHelp" class="form-text text-muted">A jira board setup for to list issues by status</small>
                     </div>
                     <div class="form-group">
                         <label for="slackGroup">Slack integration group</label>
