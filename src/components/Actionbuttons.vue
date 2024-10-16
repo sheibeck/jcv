@@ -65,7 +65,7 @@ const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
 const copyVersionForBuild = function(versionNumber: string, codeBase: string) {
   const v = props.versions.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
-    let output = `c:\\Dealeron\\integrate.sh -v ${versionNumber} -b 1 -p `;
+    let output = `c:\\Dealeron\\integrate.sh -v ${versionNumber} -b 1 `;
     v.Issues.forEach( (issue) => {
       output += `${issue.Number} `;
     });
