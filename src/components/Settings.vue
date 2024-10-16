@@ -35,6 +35,13 @@
                         <small id="slackGroupHelp" class="form-text text-muted">A slack group for use when generating a slack message: I.e. @c2c-integrators</small>
                     </div>
                 </div>
+                <div class="modal-body">
+                    <strong>Auto Builder</strong><br/>
+                    To use the autobuilder (<i class="fa-solid"></i>) Download 
+                    <a target="_blank" href="https://bitbucket.org/dealeron/workspace/snippets/y7AEx4">integration.sh</a> to <u>c:\dealeron\</u>. 
+                    Open <strong>powershell</strong> and navigate to the local folder of the repository that you are making a build for. 
+                    Click the <i class="fa-solid"></i> icon and paste the copied text into your powershell window.
+                </div>
                 <button type="button" class="btn btn-primary" @click="handleSaveSettings">Save changes</button>
             </div>
         </div>

@@ -2,6 +2,9 @@
     <button type="button" class="btn btn-sm btn-primary me-2" @click="copyVersionForSlack(version.Number, version.CodeBase)" title="Export Version for Slack">
       <i class="fa-brands fa-slack"></i>
     </button>
+    <button type="button" class="btn btn-sm btn-primary me-2" @click="copyVersionForBuild(version.Number, version.CodeBase)" title="Export Version for Build">
+      <i class="fa-solid"></i>
+    </button>
     <button type="button" class="btn btn-sm btn-secondary me-2" @click="copyVersionForExcel(version.Number, version.CodeBase)" title="Export Version for Excel">
       <i class="fa-regular fa-file-excel"></i>
     </button>
@@ -56,6 +59,22 @@ const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
     navigator.clipboard.writeText(output);
 
     sendMessage("copied for Slack");
+  }
+}
+
+const copyVersionForBuild = function(versionNumber: string, codeBase: string) {
+  const v = props.versions.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
+  if (v) {
+    let output = `c:\\Dealeron\\integrate.sh -v ${versionNumber} -b 1 -p `;
+    v.Issues.forEach( (issue) => {
+      output += `${issue.Number} `;
+    });
+    output += `\r\n`;
+
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(output);
+
+    sendMessage("copied for Integration.sh build");
   }
 }
 
