@@ -29,8 +29,9 @@ import { getIssueUrl } from '@/Utils';
 const props = defineProps<{
     handler: any;
     issues: Array<JiraTicket>
+    repoName: string;
 }>();
 
-const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/C2C/_git/VHCLIAA?version=GB${issueNumber}`;
+const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/${props.repoName}/_git/VHCLIAA?version=GB${issueNumber}`;
 
 </script>

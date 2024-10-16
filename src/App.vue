@@ -40,7 +40,7 @@
           {{codebase.Name}}
           <a :href="getCodeBaseRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i class="fas"></i></a>
         </span>
-        <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues"></DraggableIssueList>
+        <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues" :repo-name="codebase.Name"></DraggableIssueList>
       </div>
     </div>
 
