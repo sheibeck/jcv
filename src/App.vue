@@ -25,7 +25,7 @@
         <small id="subtaskHelp">Sub-tasks by repository with status</small>: 
         <select v-model="subTaskStatus" :onchange="getIssues">
           <option value="Integrating">Integrating</option>
-          <option value="Review">Review</option>
+          <option value="Review">Reviewing</option>
           <option value="Regression Testing">Regression Testing</option>
         </select>
       </div>
