@@ -123,7 +123,7 @@
               <label class="form-check-label">Released</label>
             </div>
           </h6>
-          <DraggableIssueList :handler="versionListChanged" :issues="version.Issues"></DraggableIssueList>
+          <DraggableIssueList :handler="versionListChanged" :issues="version.Issues" :repo-name="version.CodeBase"></DraggableIssueList>
         </div>
       </div>
     </div>
