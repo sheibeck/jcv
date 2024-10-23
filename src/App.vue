@@ -40,7 +40,7 @@
           {{codebase.Name}}
           <a :href="getCodeBaseRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i class="fas"></i></a>
         </span>
-        <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues" :repo-name="codebase.Name"></DraggableIssueList>
+        <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues" :repo-name="codebase.Name" :team="settings.TeamName"></DraggableIssueList>
       </div>
     </div>
 
@@ -123,7 +123,7 @@
               <label class="form-check-label">Released</label>
             </div>
           </h6>
-          <DraggableIssueList :handler="versionListChanged" :issues="version.Issues" :repo-name="version.CodeBase"></DraggableIssueList>
+          <DraggableIssueList :handler="versionListChanged" :issues="version.Issues" :repo-name="version.CodeBase" :team="settings.TeamName"></DraggableIssueList>
         </div>
       </div>
     </div>

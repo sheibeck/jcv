@@ -30,8 +30,9 @@ const props = defineProps<{
     handler: any;
     issues: Array<JiraTicket>
     repoName: string;
+    team: string;
 }>();
 
-const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/${props.repoName}/_git/VHCLIAA?version=GB${issueNumber}`;
+const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/${props.team}/_git/${props.repoName}?version=GB${issueNumber}`;
 
 </script>
