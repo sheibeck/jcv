@@ -38,7 +38,7 @@
                 <div class="modal-body">
                     <strong>Auto Builder</strong><br/>
                     To use the autobuilder (<i class="fa-solid"></i>) Download 
-                    <a target="_blank" href="https://bitbucket.org/dealeron/workspace/snippets/y7AEx4">integrate.sh</a> to <u>c:\dealeron\</u>. 
+                    <a target="_blank" href="https://dev.azure.com/dealeron/ARCH/_git/integration-script">integrate.sh</a> to <u>c:\dealeron\</u>. 
                     Open <strong>powershell</strong> and navigate to the local folder of the repository that you are making a build for. 
                     Click the <i class="fa-solid"></i> icon and paste the copied text into your powershell window.
                 </div>
