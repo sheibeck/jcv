@@ -14,6 +14,7 @@ export class Version {
     ReleaseDate: string = "";    
     IsBuilt: boolean = false;
     IsPlanned: boolean = false;
+    ReleaseDateTime: Date | null = null;
 
     constructor(team: string, number: string, codebase: string) {
         this.Team = team;

@@ -121,6 +121,7 @@
             <div class="form-check">
               <input type="checkbox" class="form-check-input bg-dark" v-model="version.Released" @change="updateVersion(version)">
               <label class="form-check-label">Released</label>
+              <input type="datetime-local" v-model="version.ReleaseDateTime" />
             </div>
           </h6>
           <DraggableIssueList :handler="versionListChanged" :issues="version.Issues" :repo-name="version.CodeBase" :team="settings.TeamName"></DraggableIssueList>
@@ -237,7 +238,10 @@ const addVersion = async function() {
     return;
   }
 
-  if (versions.value.findIndex( v => v.Number == version.Number && v.CodeBase == version.CodeBase) > -1) {
+  const allVersions = await fetchAllItems(settings.value.TeamName, true); // true = include released
+  const duplicateVersion = allVersions.find(v => v.Number === version.Number && v.CodeBase === version.CodeBase);
+
+  if (duplicateVersion) {
     sendMessage("Version already exists for this Codebase");
     return;
   }
@@ -264,6 +268,13 @@ function issueListChanged(){
 }
 
 const updateVersion = async (version: any) => {
+  if (version.Released) {
+    const now = new Date();
+    version.ReleaseDateTime = now.toISOString().slice(0, 16); // Format for <input type="datetime-local">
+  } else {
+    version.ReleaseDateTime = null;
+  }
+  
   await saveItem(version);
 }
 
