@@ -69,4 +69,18 @@ const saveAllItems = async(versions: Array<Version>) => {
     })
 }
 
-export { fetchAllItems, saveItem, deleteItem, saveAllItems };
+const checkDuplicateVersion = async (team: string, codeBase: string, versionNumber: string): Promise<boolean> => {
+    const query = `
+        SELECT * FROM c 
+        WHERE c.Team = '${team}'
+        AND c.CodeBase = '${codeBase}'
+        AND c.Number = '${versionNumber}'
+    `;
+
+    const { resources } = await container.items.query(query).fetchAll();
+
+    // Return true if a version was found
+    return resources.length > 0;
+}
+
+export { fetchAllItems, saveItem, deleteItem, saveAllItems, checkDuplicateVersion };

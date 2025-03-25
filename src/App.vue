@@ -141,7 +141,7 @@ import { Version } from "@/Version";
 import { IssueService } from "@/IssueService";
 import { UserSettings, fetchSettings, isSettingsValid, saveSettings } from "@/UserSettings";
 import Settings from "@/components/Settings.vue";
-import { fetchAllItems, saveItem, saveAllItems } from "@/CosmosDb";
+import { fetchAllItems, saveItem, saveAllItems, checkDuplicateVersion } from "@/CosmosDb";
 import DraggableIssueList from "@/components/DraggableIssueList.vue";
 import ActionButtons from "./components/Actionbuttons.vue";
 import { sendMessage } from "@/UserMessageService";
@@ -238,11 +238,15 @@ const addVersion = async function() {
     return;
   }
 
-  const allVersions = await fetchAllItems(settings.value.TeamName, true); // true = include released
-  const duplicateVersion = allVersions.find(v => v.Number === version.Number && v.CodeBase === version.CodeBase);
+  // 🔥 Optimized Duplicate Check
+  const isDuplicate = await checkDuplicateVersion(
+    settings.value.TeamName,
+    version.CodeBase,
+    version.Number
+  );
 
-  if (duplicateVersion) {
-    sendMessage("Version already exists for this Codebase");
+  if (isDuplicate) {
+    sendMessage(`Version ${version.Number} already exists for this Codebase`);
     return;
   }
 
