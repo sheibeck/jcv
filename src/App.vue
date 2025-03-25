@@ -121,7 +121,7 @@
             <div class="form-check">
               <input type="checkbox" class="form-check-input bg-dark" v-model="version.Released" @change="updateVersion(version)">
               <label class="form-check-label">Released</label>
-              <input type="datetime-local" v-model="version.ReleaseDateTime" />
+              <input type="datetime-local" v-model="version.ReleaseDateTime" @change="updateVersion(version)" />
             </div>
           </h6>
           <DraggableIssueList :handler="versionListChanged" :issues="version.Issues" :repo-name="version.CodeBase" :team="settings.TeamName"></DraggableIssueList>
@@ -272,13 +272,17 @@ function issueListChanged(){
 }
 
 const updateVersion = async (version: any) => {
+  // If checkbox is checked, only set the ReleaseDateTime if it's empty
   if (version.Released) {
-    const now = new Date();
-    version.ReleaseDateTime = now.toISOString().slice(0, 16); // Format for <input type="datetime-local">
+    if (!version.ReleaseDateTime) {
+      const now = new Date();
+      version.ReleaseDateTime = now.toISOString().slice(0, 16); // Format for <input type="datetime-local">
+    }
   } else {
+    // Clear the date when 'Released' is unchecked
     version.ReleaseDateTime = null;
   }
-  
+
   await saveItem(version);
 }
 
