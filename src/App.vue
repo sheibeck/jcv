@@ -119,7 +119,7 @@
               <label class="form-check-label">Built</label>
             </div>
             <div class="form-check">
-              <input type="checkbox" class="form-check-input bg-dark" v-model="version.Released" @change="updateVersion(version)">
+              <input type="checkbox" class="form-check-input" v-model="version.Released" @change="updateVersion(version)">
               <label class="form-check-label">Released</label>
               <input type="datetime-local" v-model="version.ReleaseDateTime" @change="updateVersion(version)" />
             </div>
