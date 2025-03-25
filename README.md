@@ -1,33 +1,35 @@
-# jira-versioner
+# Jira Version Manager
 
-This template should help get you started developing with Vue 3 in Vite.
+Jira Version Manager allows you to create versions and put tickets from Jira cloud into the versions. If you do not have an Versioning Agile board in Jira for your team contact your team architect to set one up for you.
 
-## Recommended IDE Setup
+## Configuration
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+In order to configure your versions you will need to click the cog and enter you work email, jira api key, team name, jira board number, and your slack integration group name. 
 
-## Type Support for `.vue` Imports in TS
+## Sub tasks
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+The left half of the screen will show you subtasks that are in Review, Integrating or Regression Testing (use the dropdown to choose which status you want to search.) It will list subtasks by repository name based on your teams Agile board in Jira.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+## Versions
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+The right half of the scren will show you all the versions you have. You can create new versions by typing in your CodeBaseKey (i.e. repository name) and the version number you want for the release. The software checks for duplicate version numbers per code base.
 
-## Customize configuration
+### Release Status
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+A version can be planned, built and released simply by checking the boxes based on the state of your version. Planned means that you've anounced this version to the team, built means that is is built and in QA, and released means that it has been pushed to production. Checking the released box will automatically fill in the local date time.
 
-## Project Config
-Add `.env` file with the following:
+### Version Actions
 
-```sh
-VITE_COSMOSDB_CS=<your_cosmosdb_connectionstring>
-VITE_JIRA_TOKEN=<your_jira_user_email>:<your_jira_api_key>
-```
+There are icons located above each version. 
+
+* Export for Slack - the slack icon copies a formatted message to your clipboard that you can paste into your slack integration channel.
+* Export for Build - the hammer icon copies a command to run a build command from your command line. You can view this for more information https://dev.azure.com/dealeron/ARCH/_git/integration-script
+* Export for Excel - this exports the release for pasting into an excel spreadsheet. This process has been deprecated so it may no longer be needed.
+* Delete - the trash can icon will prompt you to confirm the deletion of your version.
+
+### Searching
+
+On load of the page released versions will not show by defaults unless you toggle the `released` toggle located in the upper right corner. The search box allows you to search through your versions. Currently the site will only load the last 15 versions.
 
 ## Project Setup
 
