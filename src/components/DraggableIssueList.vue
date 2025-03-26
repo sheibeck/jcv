@@ -2,11 +2,11 @@
     <draggable
         @change="handler"
         :list="issues"
-        class="border version-drop bg-dark p-1"
+        class="border version-drop bg-dark p-1 border-secondary rounded"
         group="version"
         item-key="Number">
         <template #item="{element}">
-        <div class="border m-1 p-1">
+        <div class="border m-1 p-1 rounded">
             <div class="bg-dark">
             {{ element.Number }} 
                 <a class="ms-2" :href="getIssueUrl(element.Number)" target="_blank" :title="`Jira Issue ${element.Number}`"><i class="fas"></i></a>

@@ -9,6 +9,14 @@ const containerName = "versions";
 const { database } = await client.databases.createIfNotExists({ id: dbname });
 const { container } = await database.containers.createIfNotExists({ id: containerName });
 
+const fetchQuery = async (query: string) => {
+    const { resources } = await container.items
+        .query(query)
+        .fetchAll();
+
+    return resources;
+}
+
 const fetchAllItems = async (team: string, includeReleased?: boolean, searchIssue?: string) => {
     // adding 1=1 allows us to add AND clauses without checking if the first one exists
     let query = `SELECT TOP 15 * from c WHERE c.Team = '${team}' AND 1=1`;
@@ -23,13 +31,16 @@ const fetchAllItems = async (team: string, includeReleased?: boolean, searchIssu
 
     query += ` ORDER BY c.Major desc, c.Minor desc, c.Revision desc`;
 
-    const { resources } = await container.items
-        .query(query)
-        .fetchAll();
+    const resources = await fetchQuery(query);
 
     var versionList = new Array<Version>();
 
     for(const version of resources) {
+        if (!!version.ReleaseDateTime) {
+            const dateOffset = new Date(version.ReleaseDateTime);
+            const dateLocal = new Date(dateOffset.getTime() - (dateOffset.getTimezoneOffset() * 60000)).toISOString();
+            version.ReleaseDateTime = dateLocal.slice(0, 16);
+        }
         versionList.push(version as Version);
     };
 
@@ -83,4 +94,4 @@ const checkDuplicateVersion = async (team: string, codeBase: string, versionNumb
     return resources.length > 0;
 }
 
-export { fetchAllItems, saveItem, deleteItem, saveAllItems, checkDuplicateVersion };
+export { fetchQuery, fetchAllItems, saveItem, deleteItem, saveAllItems, checkDuplicateVersion };
