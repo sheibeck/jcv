@@ -37,8 +37,8 @@
           </select>
         </div>
         <div v-if="component.CodeBases.length == 0">
-          <span class="h5">No Sub-tasks found with status <span class="badge bg-primary">{{ subTaskStatus
-          }}</span></span>
+          <span class="h5">No Sub-tasks found with status <span class="badge bg-primary"> {{
+            subTaskStatus }}</span></span>
         </div>
         <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-dark">
           <span class="h4 border-bottom">
@@ -115,7 +115,8 @@
                 {{ version.CodeBase }} {{ version.Number }}
               </div>
               <div class="ms-auto">
-                <ActionButtons :versions="versions" :version="version" :getIssues="getIssues" :settings="settings">
+                <ActionButtons :versions="versions" :version="version" :callback="fetchAllVersions"
+                  :settings="settings">
                 </ActionButtons>
               </div>
             </h5>

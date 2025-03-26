@@ -23,7 +23,7 @@ import type { UserSettings } from "@/UserSettings";
 const props = defineProps<{
     versions: Array<Version>;
     version: Version;
-    getIssues: Function;
+    callback: Function;
     settings: UserSettings;
 }>();
 
@@ -39,7 +39,7 @@ const removeVersion = async(versionNumber: string, codeBase: string) =>{
   
       await deleteItem(v);
     }
-    props.getIssues();
+    props.callback();
 
     sendMessage(`Version ${versionNumber} deleted from ${codeBase}`);
   }  
