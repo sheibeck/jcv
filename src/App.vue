@@ -270,7 +270,7 @@ const addVersion = async function () {
 
   if (settings.value.TeamName === "") {
     sendMessage("You must include a team name");
-    showSettings.value = true;
+    toggleShowSettings();
     return;
   }
 
@@ -408,7 +408,7 @@ onMounted(async () => {
   settings.value = fetchSettings();
 
   if (!isSettingsValid(settings.value)) {
-    showSettings.value = true;
+    toggleShowSettings();
   }
   else {
     component.value = new Component(settings.value.TeamName);

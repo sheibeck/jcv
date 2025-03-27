@@ -6,6 +6,15 @@ Jira Version Manager allows you to create versions and put tickets from Jira clo
 
 In order to configure your versions you will need to click the cog and enter you work email, jira api key, team name, jira board number, and your slack integration group name. 
 
+| Field | Description |
+| --- | --- |
+| Email | Your work email address. |
+| Jira API Key | Your Jira API key. |
+| Team Name | The name of your team. |
+| Jira Board Number | The number of your Jira board. |
+| Slack Integration Group Name | The name of your slack integration group. |
+| FirstPiStartDate | Defines the start date of the first PI of the year. This is used to calculate the PI and Sprint number. This value should be updated once a year. |
+
 ## Sub tasks
 
 The left half of the screen will show you subtasks that are in Review, Integrating or Regression Testing (use the dropdown to choose which status you want to search.) It will list subtasks by repository name based on your teams Agile board in Jira.
