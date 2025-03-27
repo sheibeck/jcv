@@ -29,7 +29,6 @@ export const fetchSettings = () => {
             userSettings.FirstPiStartDate = date.toISOString().split("T")[0];
         }
     }
-    console.log(userSettings);
     return userSettings;
 }
 
