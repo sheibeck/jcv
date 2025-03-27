@@ -6,6 +6,7 @@ export class UserSettings {
     TeamName: string = "";
     BoardNumber: string = "";
     SlackGroup: string = "";
+    FirstPiStartDate: string = "";
 
     constructor() {
     }
@@ -22,8 +23,12 @@ export const fetchSettings = () => {
         userSettings.BoardNumber = settings.BoardNumber;
         userSettings.SlackGroup = settings.SlackGroup;
         userSettings.ApiKey = settings.ApiKey;
+        if(settings.FirstPiStartDate){
+            const [year, month, day] = settings.FirstPiStartDate.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            userSettings.FirstPiStartDate = date.toISOString().split("T")[0];
+        }
     }
-
     return userSettings;
 }
 

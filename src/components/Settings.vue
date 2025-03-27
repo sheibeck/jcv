@@ -1,7 +1,7 @@
 <template>
     <div class="modal" :class="{'fade show': showSettings}" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
-            <div class="modal-content bg-secondary">
+            <div class="modal-content bg-dark border border-primary border-3 rounded-3">
                 <div class="modal-header">
                     <h5 class="modal-title">Settings</h5>
                     <button type="button" class="close" aria-label="Close" @click="emits('closeSettings')">
@@ -33,6 +33,11 @@
                         <label for="slackGroup">Slack integration group</label>
                         <input v-if="userSettings !== undefined" type="text" class="form-control" id="slackGroup" aria-describedby="slackGroupHelp" placeholder="Slack Group" v-model="userSettings.SlackGroup">
                         <small id="slackGroupHelp" class="form-text text-muted">A slack group for use when generating a slack message: I.e. @c2c-integrators</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstPi">First PI start date</label>
+                        <input v-if="userSettings !== undefined" type="date" class="form-control" id="firstPi" aria-describedby="firstPiHelp" placeholder="01/01/1900" v-model="userSettings.FirstPiStartDate">
+                        <small id="firstPiHelp" class="form-text text-muted"> The start date of the first PI of the year</small>
                     </div>
                 </div>
                 <div class="modal-body">
