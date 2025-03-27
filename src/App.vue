@@ -398,7 +398,7 @@ function saveUserSettings() {
   }
 
   saveSettings(settings.value);
-  showSettings.value = false;
+  toggleShowSettings();
   fetchVersionsAndIssues();
 
   sendMessage("Saved settings.");
