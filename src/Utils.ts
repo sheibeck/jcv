@@ -4,8 +4,8 @@ export const isRegression = (issue: JiraTicket) => {
     return issue.IssueType === "Regression";
 }
 
-export function hasValue(value: string) {
-    return value?.length > 0;
+export function hasValue(value: string | undefined | null): boolean {
+    return value != null && value.length > 0;
 }
   
 export const getIssueUrl = (issueNumber: string) => {

@@ -7,8 +7,21 @@ export class UserSettings {
     BoardNumber: string = "";
     SlackGroup: string = "";
     FirstPiStartDate: string = "";
+    SlackGroups: { [key: string]: string };
 
     constructor() {
+        this.SlackGroups = {
+            "DSCO": "@dsco-integrators",
+            "LEA": "@lea-integration",
+            "OMNI": "@omni-integration",
+            "PIT": "@pit-integration",
+            "PLG": "@plg-integrators",
+            "PPE": "@ppe-integration",
+            "SPEC": "@spec-integration",
+            "SPR": "@spr-integrators",
+            "TAG": "@tag-integration",
+            "TNT": "@tnt-integration",
+        };
     }
 }
 
@@ -27,6 +40,9 @@ export const fetchSettings = () => {
             const [year, month, day] = settings.FirstPiStartDate.split("-").map(Number);
             const date = new Date(year, month - 1, day);
             userSettings.FirstPiStartDate = date.toISOString().split("T")[0];
+        }
+        if(settings.SlackGroups && Object.keys(settings.SlackGroups).length > 0) {
+            userSettings.SlackGroups = settings.SlackGroups;
         }
     }
     return userSettings;
