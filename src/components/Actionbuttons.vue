@@ -17,7 +17,7 @@
 import type { Version } from "@/Version";
 import { deleteItem } from "@/CosmosDb";
 import { sendMessage } from "@/UserMessageService";
-import { getIssueUrl, isRegression } from "@/Utils";
+import { getIssueUrl, hasValue, isRegression } from "@/Utils";
 import type { UserSettings } from "@/UserSettings";
 
 const props = defineProps<{
@@ -48,12 +48,19 @@ const removeVersion = async(versionNumber: string, codeBase: string) =>{
 const copyVersionForSlack = function(versionNumber: string, codeBase: string) {
   const v = props.versions.find( v => v.Number === versionNumber && v.CodeBase == codeBase);
   if (v) {
-    let output = `${props.settings?.SlackGroup}\r\n`;
+    let slackGroups = [props.settings?.SlackGroup];   
+
+    let output = `\r\n`;
     output += `${v.FullVersion}\r\n`;
     v.Issues.forEach( (issue) => {
-      output += `[${issue.Number}](${getIssueUrl(issue.Number)}) - ${issue.Summary} ${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""} \r\n`;
+      const team = props.settings.SlackGroups[issue.Team];
+      if(hasValue(team) && !slackGroups.includes(team!)) {
+          slackGroups.push(team!);
+      }
+      output += `[${issue.Number}](${getIssueUrl(issue.Number)}) ${hasValue(issue.Team) ? `[${issue.Team}]` : ""} - ${issue.Summary} ${issue.IsSev ? ` [${issue.Priority}]` : ""}${isRegression(issue) ? ` [regression]` : ""} \r\n`;
     });
-    output += `\r\n`;
+    
+    output = slackGroups.join(" ") + output;
 
     // Copy the text inside the text field
     navigator.clipboard.writeText(output);
