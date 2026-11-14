@@ -1,6 +1,8 @@
 <template>
     <draggable
         @change="handler"
+        @start="onDragStart"
+        @end="onDragEnd"
         :list="issues"
         class="border version-drop bg-dark p-1 border-secondary rounded"
         group="version"
@@ -14,6 +16,7 @@
                 <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
                 <i v-if="element.IsSev" :title="element.Priority" class="badge bg-danger small ms-1">sev</i>
                 <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning text-dark small ms-1">regression</i>
+                <IssueLinkChips :ticket-key="element.Number"></IssueLinkChips>
             </div>
             <span v-if="hasValue(element.Team)" class="badge bg-info text-dark">{{ element.Team }}</span>
             <small>{{ element.Summary }}</small>
@@ -31,6 +34,8 @@ import draggable from 'vuedraggable';
 import type { JiraTicket } from '@/JiraTicket';
 import { isRegression, hasValue } from '@/Utils';
 import { getIssueUrl } from '@/Utils';
+import { isDragging } from '@/IssueLinks';
+import IssueLinkChips from './IssueLinkChips.vue';
 
 const props = defineProps<{
     handler: any;
@@ -40,6 +45,10 @@ const props = defineProps<{
 }>();
 
 const getIssueBranchUrl = (issueNumber: string) => `https://dev.azure.com/dealeron/${props.team}/_git/${props.repoName}?version=GB${issueNumber}`;
+
+// Link tooltips stay hidden while a card is being dragged
+const onDragStart = () => { isDragging.value = true; };
+const onDragEnd = () => { isDragging.value = false; };
 
 </script>
 

@@ -1,1 +1,7 @@
 @import './base.css';
+
+/* Blocked / Depends on pill colors (IssueLinkChips.vue) */
+:root {
+  --jcv-blocked: #D41717;
+  --jcv-depends-on: #0d6efd; /* Bootstrap link blue, same as the Jira / branch link icons */
+}
