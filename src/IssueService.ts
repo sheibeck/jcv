@@ -107,16 +107,25 @@ export class IssueService {
     /**
      * Current blocker/dependency links for the given tickets, one GET per ticket (a few at a time).
      * Results are keyed by the ticket number asked for, so a ticket Jira has since moved to a new key
-     * still matches its card. Tickets that are gone or hidden (404/403) are left out; any other
-     * failure (network, expired login, proxy down) rejects so the caller can show the warning.
+     * still matches its card. Tickets Jira reports as missing (404, which also covers tickets you
+     * can't see) are left out. Any other failure (403 lockout, network, expired login, proxy down)
+     * stops the remaining requests and rejects, so the caller can clear the pills and log the error.
+     *
+     * `isCurrent` lets the caller cancel: once it returns false (a newer refresh started), no more
+     * requests are sent and whatever was fetched so far is returned for the caller to discard.
      */
-    async GetIssueLinks(ticketKeys: string[]): Promise<Map<string, IssueLink[]>> {
+    async GetIssueLinks(ticketKeys: string[], isCurrent: () => boolean = () => true): Promise<Map<string, IssueLink[]>> {
         const keys = [...new Set(ticketKeys)];
         const result = new Map<string, IssueLink[]>();
         let next = 0;
+        let stopped = false; // set on failure or cancel, so every worker stops taking new tickets
 
         const worker = async () => {
-            while (next < keys.length) {
+            while (!stopped && next < keys.length) {
+                if (!isCurrent()) {
+                    stopped = true;
+                    return;
+                }
                 const key = keys[next++];
                 try {
                     const issue = await this.request(`${JIRA_BASE}/rest/api/3/issue/${encodeURIComponent(key)}?fields=issuelinks`);
@@ -125,8 +134,11 @@ export class IssueService {
                     }
                 }
                 catch (error) {
-                    const goneOrHidden = error instanceof JiraRequestError && (error.status === 404 || error.status === 403);
-                    if (!goneOrHidden) throw error;
+                    const missing = error instanceof JiraRequestError && error.status === 404;
+                    if (!missing) {
+                        stopped = true;
+                        throw error;
+                    }
                 }
             }
         };

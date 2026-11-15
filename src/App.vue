@@ -240,7 +240,10 @@ const getIssues = async function () {
 
 const refreshButtonHandler = async () => {
   // Also refresh blocker/dependency pills on tickets inside versions, so "refresh" means everything is current.
-  await Promise.all([getIssues(), refreshVersionLinks()]);
+  // Not awaited (same as fetchAllVersions): the spinner and toast follow the sub-task fetch, and version
+  // pills update when Jira answers. A newer refresh cancels the remaining requests of an older one.
+  refreshVersionLinks();
+  await getIssues();
   sendMessage("Refreshed sub-tasks from Jira.");
 }
 
@@ -358,7 +361,7 @@ const fetchAllVersions = async () => {
 
   isLoadingVersions.value = false;
 
-  // Not awaited: versions show right away and link chips appear once Jira answers.
+  // Not awaited: versions show right away and link pills appear once Jira answers.
   refreshVersionLinks();
 }
 
@@ -372,7 +375,8 @@ const refreshVersionLinks = async () => {
   if (keys.length === 0) return;
 
   try {
-    const links = await issueService.GetIssueLinks(keys);
+    // Stops sending requests as soon as a newer refresh starts
+    const links = await issueService.GetIssueLinks(keys, () => requestId === versionLinksRequest);
     if (requestId !== versionLinksRequest) return; // a newer refresh has started
 
     // Tickets Jira didn't return (deleted, moved, no access) lose their pills rather than keep stale ones.

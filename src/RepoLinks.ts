@@ -8,7 +8,8 @@
 // TEST projects. To refresh it, list each project's repos with the Azure CLI (azure-devops extension):
 //   az devops project list --organization https://dev.azure.com/dealeron --query "value[].name" -o tsv
 //   az repos list --organization https://dev.azure.com/dealeron --project <project> --query "[].name" -o tsv
-// and add any codebase whose project isn't its first 4 letters.
+// and add any codebase whose project isn't its first 4 letters. Check every all-caps repo name,
+// not just 7-character ones: 6-character codebases like ARCSHA and INVSHA exist too.
 
 const ADO_ORG_URL = "https://dev.azure.com/dealeron";
 
@@ -28,6 +29,8 @@ const PROJECT_EXCEPTIONS: Record<string, string> = {
     BAMSBAA: "BANR",
     OEMPBAA: "OEMS",
     INFEXPT: "RPRT",
+    ARCSHA: "ARCH",
+    INVSHA: "INV",
 };
 
 /** Azure DevOps project that holds a codebase's repo. */

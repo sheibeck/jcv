@@ -71,9 +71,11 @@ const hiddenEntries = computed(() => entries.value.slice(visibleEntries.value.le
 
 // Which pill the tooltip belongs to: an entry id, or "overflow" for "+N more"
 const activePill = ref("");
+// Uses visibleEntries (not entries): if a refresh moves the hovered pill into "+N more", this becomes
+// empty and the tooltip closes instead of staying attached to a pill that's gone.
 const tooltipEntries = computed(() => activePill.value === "overflow"
   ? hiddenEntries.value
-  : entries.value.filter(e => e.id === activePill.value));
+  : visibleEntries.value.filter(e => e.id === activePill.value));
 
 const tooltipId = `link-tooltip-${Math.random().toString(36).slice(2, 10)}`;
 const isOpen = ref(false);
@@ -176,8 +178,15 @@ watch(isDragging, (dragging) => {
 });
 
 // A refresh can leave the open tooltip with nothing to show (e.g. the blocker was resolved); close it properly.
-watch(tooltipEntries, (shown) => {
-  if (isOpen.value && shown.length === 0) close();
+watch(tooltipEntries, async (shown) => {
+  if (!isOpen.value) return;
+  if (shown.length === 0 || !anchor?.isConnected) {
+    close();
+    return;
+  }
+  // Content changed while open (e.g. "+N more" grew): re-place it so it doesn't run off the screen.
+  await nextTick();
+  position();
 });
 
 onBeforeUnmount(() => {
