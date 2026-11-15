@@ -5,7 +5,15 @@ import { parseIssueLinks, setLinks, type IssueLink } from "./IssueLinks";
 // running a custom cors proxy on heroku.
 const CORS_PROXY = 'https://jvc-cors-proxy-7bc908c62bc1.herokuapp.com/';
 const JIRA_BASE = 'https://dealeron.atlassian.net';
-const BULK_FETCH_LIMIT = 100; // Jira's max issues per bulkfetch request
+// Link lookups for versioned tickets run this many requests at a time.
+const LINK_FETCH_CONCURRENCY = 6;
+
+/** A failed Jira request; `status` is the HTTP status (0 = network/CORS failure). */
+export class JiraRequestError extends Error {
+    constructor(public readonly status: number, url: string) {
+        super(`Error: ${status} for endpoint ${url}`);
+    }
+}
 
 export class IssueService {
     private getJiraUrl(boardNumber: string, status: string = "Integrating"): string {
@@ -21,11 +29,12 @@ export class IssueService {
         return token;
     }
 
-    private request(method: "GET" | "POST", jiraUrl: string, body?: unknown, extraHeaders: Record<string, string> = {}): Promise<any> {
+    // GET only: through the proxy, Jira rejects browser POSTs with "XSRF check failed".
+    private request(jiraUrl: string, extraHeaders: Record<string, string> = {}): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = CORS_PROXY + jiraUrl;
             const xhr = new XMLHttpRequest();
-            xhr.open(method, url, true);
+            xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${this.getJiraToken()}`);
             xhr.setRequestHeader("Content-Type", "application/json");
             for (const [name, value] of Object.entries(extraHeaders)) {
@@ -47,19 +56,19 @@ export class IssueService {
                         reject(new Error(`Empty response from ${url}.`));
                     }
                 } else {
-                    reject(`Error: ${xhr.status} for endpoint ${url}`);
+                    reject(new JiraRequestError(xhr.status, url));
                 }
             };
 
             xhr.onerror = () => {
-                reject((`Error: ${xhr.status} for endpoint ${url}`));
+                reject(new JiraRequestError(xhr.status, url));
             }
-            xhr.send(body === undefined ? null : JSON.stringify(body));
+            xhr.send();
         });
     }
 
     private fetchIssues(boardNumber: string, status: string): any {
-        return this.request("GET", this.getJiraUrl(boardNumber, status), undefined, {
+        return this.request(this.getJiraUrl(boardNumber, status), {
             'Access-Control-Allow-Origin': '*',
             "Access-Control-Allow-Methods": "OPTIONS, GET",
         });
@@ -96,36 +105,33 @@ export class IssueService {
     }
 
     /**
-     * Fetches the given fields for many tickets at once. Tickets Jira can't return
-     * (deleted, moved, no access) come back in `issueErrors` and are simply left out.
+     * Current blocker/dependency links for the given tickets, one GET per ticket (a few at a time).
+     * Results are keyed by the ticket number asked for, so a ticket Jira has since moved to a new key
+     * still matches its card. Tickets that are gone or hidden (404/403) are left out; any other
+     * failure (network, expired login, proxy down) rejects so the caller can show the warning.
      */
-    private async bulkFetch(ticketKeys: string[], fields: string[]): Promise<any[]> {
-        const keys = [...new Set(ticketKeys)];
-        const issues: any[] = [];
-
-        for (let i = 0; i < keys.length; i += BULK_FETCH_LIMIT) {
-            const response = await this.request(
-                "POST",
-                `${JIRA_BASE}/rest/api/3/issue/bulkfetch`,
-                { issueIdsOrKeys: keys.slice(i, i + BULK_FETCH_LIMIT), fields },
-                { "X-Atlassian-Token": "no-check" },
-            );
-            issues.push(...(response?.issues ?? []));
-        }
-
-        return issues;
-    }
-
-    /** Current blocker/dependency links for the given tickets. */
     async GetIssueLinks(ticketKeys: string[]): Promise<Map<string, IssueLink[]>> {
+        const keys = [...new Set(ticketKeys)];
         const result = new Map<string, IssueLink[]>();
+        let next = 0;
 
-        for (const issue of await this.bulkFetch(ticketKeys, ["issuelinks"])) {
-            if (issue?.key && Array.isArray(issue.fields?.issuelinks)) {
-                result.set(issue.key, parseIssueLinks(issue.fields.issuelinks));
+        const worker = async () => {
+            while (next < keys.length) {
+                const key = keys[next++];
+                try {
+                    const issue = await this.request(`${JIRA_BASE}/rest/api/3/issue/${encodeURIComponent(key)}?fields=issuelinks`);
+                    if (Array.isArray(issue?.fields?.issuelinks)) {
+                        result.set(key, parseIssueLinks(issue.fields.issuelinks));
+                    }
+                }
+                catch (error) {
+                    const goneOrHidden = error instanceof JiraRequestError && (error.status === 404 || error.status === 403);
+                    if (!goneOrHidden) throw error;
+                }
             }
-        }
+        };
 
+        await Promise.all(Array.from({ length: Math.min(LINK_FETCH_CONCURRENCY, keys.length) }, worker));
         return result;
     }
 }

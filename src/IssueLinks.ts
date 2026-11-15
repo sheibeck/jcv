@@ -78,8 +78,5 @@ export const deleteLinks = (ticketKey: string) => {
     linksByTicket.delete(ticketKey);
 };
 
-/** Load state of the live link refresh for tickets inside versions. */
-export const versionLinksState = ref<"idle" | "loading" | "ok" | "error">("idle");
-
 /** True while a card is being dragged, so link tooltips stay out of the way. */
 export const isDragging = ref(false);

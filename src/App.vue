@@ -85,10 +85,6 @@
             </div>
           </div>
         </div>
-        <small v-if="versionLinksState === 'error'" class="d-block text-warning px-1">
-          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-          Link status unavailable for versioned tickets
-        </small>
         <div class="d-flex border-bottom pb-2 mb-2">
           <div class="form-floating mx-1">
             <input id="version" ref="newVersionNumber" type="text" class="form-control bg-dark text-secondary"
@@ -175,7 +171,7 @@ import ActionButtons from "./components/Actionbuttons.vue";
 import { sendMessage } from "@/UserMessageService";
 import { hasValue } from "@/Utils";
 import Report from "@/components/Report.vue";
-import { deleteLinks, setLinks, versionLinksState } from "@/IssueLinks";
+import { deleteLinks, setLinks } from "@/IssueLinks";
 import { getRepoUrl } from "@/RepoLinks";
 
 const settings = ref<UserSettings>(new UserSettings());
@@ -373,12 +369,8 @@ const refreshVersionLinks = async () => {
   const requestId = ++versionLinksRequest;
   const keys = versions.value.flatMap(v => v.Issues.map(i => i.Number));
 
-  if (keys.length === 0) {
-    versionLinksState.value = "ok";
-    return;
-  }
+  if (keys.length === 0) return;
 
-  versionLinksState.value = "loading";
   try {
     const links = await issueService.GetIssueLinks(keys);
     if (requestId !== versionLinksRequest) return; // a newer refresh has started
@@ -389,15 +381,13 @@ const refreshVersionLinks = async () => {
       if (ticketLinks) setLinks(key, ticketLinks);
       else deleteLinks(key);
     });
-    versionLinksState.value = "ok";
   }
   catch (error) {
     if (requestId !== versionLinksRequest) return;
 
     console.error("Could not load link status for versioned tickets.", error);
-    // Show no chips rather than possibly stale ones.
+    // Show no pills rather than possibly stale ones.
     keys.forEach(key => deleteLinks(key));
-    versionLinksState.value = "error";
   }
 }
 
