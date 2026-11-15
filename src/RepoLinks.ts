@@ -1,15 +1,5 @@
-// Links to codebase repos in Azure DevOps.
-//
-// Repos live in per-area Azure DevOps projects, and the project is part of every repo URL
-// (…/dealeron/_git/<repo> without a project is a 404). For most repos the project is the first
-// 4 letters of the codebase key (VHCLIAA → VHCL). PROJECT_EXCEPTIONS lists the ones that aren't.
-//
-// Built 2026-11-14 from the live list of all repos in the org, leaving out the ARCHIVE, MOCK and
-// TEST projects. To refresh it, list each project's repos with the Azure CLI (azure-devops extension):
-//   az devops project list --organization https://dev.azure.com/dealeron --query "value[].name" -o tsv
-//   az repos list --organization https://dev.azure.com/dealeron --project <project> --query "[].name" -o tsv
-// and add any codebase whose project isn't its first 4 letters. Check every all-caps repo name,
-// not just 7-character ones: 6-character codebases like ARCSHA and INVSHA exist too.
+// Links to codebase repos in Azure DevOps. For most repos the project is the first 4 letters
+// of the codebase key (VHCLIAA → VHCL). PROJECT_EXCEPTIONS lists the ones that aren't.
 
 const ADO_ORG_URL = "https://dev.azure.com/dealeron";
 
