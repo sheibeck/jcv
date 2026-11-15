@@ -1,30 +1,21 @@
 <template>
-  <span v-if="entries.length" class="link-pills">
-    <button v-for="entry in visibleEntries" :key="entry.id" type="button"
-      class="badge link-pill fst-italic" :class="KINDS[entry.kind].colorClass" :data-pill="entry.id"
-      :aria-expanded="isOpen && activePill === entry.id"
-      :aria-controls="isOpen && activePill === entry.id ? tooltipId : undefined"
-      :aria-label="`${KINDS[entry.kind].label} ${entry.link.Key}`"
+  <span v-if="pills.length" class="link-pills">
+    <button v-for="pill in pills" :key="pill.id" type="button"
+      class="badge link-pill" :class="{ 'fst-italic': pill.italic }" :style="{ '--pill-color': pill.color }"
+      :data-pill="pill.id"
+      :aria-expanded="isActive(pill.id)" :aria-controls="isActive(pill.id) ? tooltipId : undefined"
+      :aria-label="pill.ariaLabel"
       @mouseenter="scheduleOpen" @mouseleave="scheduleClose" @focus="openNow" @blur="scheduleClose" @click="openNow">
-      {{ KINDS[entry.kind].label }} {{ entry.link.Key }}
-    </button>
-    <button v-if="hiddenEntries.length" type="button" class="badge link-pill pill-overflow" data-pill="overflow"
-      :aria-expanded="isOpen && activePill === 'overflow'"
-      :aria-controls="isOpen && activePill === 'overflow' ? tooltipId : undefined"
-      :aria-label="`${hiddenEntries.length} more: ${hiddenEntries.map(e => `${KINDS[e.kind].label} ${e.link.Key}`).join(', ')}`"
-      @mouseenter="scheduleOpen" @mouseleave="scheduleClose" @focus="openNow" @blur="scheduleClose" @click="openNow">
-      +{{ hiddenEntries.length }} more
+      {{ pill.label }}
     </button>
 
     <Teleport to="body">
       <div v-if="isOpen && tooltipEntries.length" :id="tooltipId" ref="tooltipEl" class="link-tooltip" role="region"
         :aria-label="`Tickets ${ticketKey} is waiting on`" :style="tooltipStyle"
         @mouseenter="cancelClose" @mouseleave="scheduleClose" @focusin="cancelClose" @focusout="scheduleClose">
-        <div v-for="entry in tooltipEntries" :key="entry.id" class="link-row" :class="`kind-${entry.kind}`">
+        <div v-for="entry in tooltipEntries" :key="entry.id" class="link-row" :style="{ '--pill-color': entry.def.color }">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge fst-italic" :class="KINDS[entry.kind].colorClass">
-              {{ KINDS[entry.kind].label }}
-            </span>
+            <span class="badge link-kind fst-italic">{{ entry.def.label }}</span>
             <span class="fw-bold">{{ entry.link.Key }}</span>
             <span class="badge" :class="statusClass(entry.link)">{{ entry.link.StatusName }}</span>
             <!-- Same Font Awesome file icon (U+F15B) the sub-task cards use for their Jira link -->
@@ -41,7 +32,8 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { getLinks, isDragging, openLinks, type IssueLink, type LinkRelation } from "@/IssueLinks";
+import { getLinks, openLinks, type IssueLink, type LinkRelation } from "@/IssueLinks";
+import { isDragging } from "@/DragState";
 import { getIssueUrl } from "@/Utils";
 
 const OPEN_DELAY_MS = 250;
@@ -51,29 +43,49 @@ const EDGE_PX = 8;
 // Most pills a card shows. Past this, the last slot becomes "+N more" so a ticket with many
 // blockers can't stretch the card; the "+N more" tooltip lists the rest.
 const MAX_PILLS = 3;
+const OVERFLOW_ID = "overflow";
+const OVERFLOW_COLOR = "var(--bs-gray-700)";
 
-type PillKind = "blocked" | "dependsOn";
-// Order matters: blockers are shown before dependencies, so "+N more" hides dependencies first.
-const KINDS: Record<PillKind, { relation: LinkRelation; label: string; colorClass: string }> = {
-  blocked: { relation: "is blocked by", label: "Blocked by", colorClass: "pill-blocked" },
-  dependsOn: { relation: "depends on", label: "Depends on", colorClass: "pill-depends-on" },
-};
+interface KindDef { kind: string; relation: LinkRelation; label: string; color: string }
+// In display order: blockers before dependencies, so "+N more" hides dependencies first.
+// `color` is the one place each kind's color is set (pill, tooltip label and tooltip box edge).
+const KINDS: KindDef[] = [
+  { kind: "blocked", relation: "is blocked by", label: "Blocked by", color: "var(--jcv-blocked)" },
+  { kind: "dependsOn", relation: "depends on", label: "Depends on", color: "var(--jcv-depends-on)" },
+];
 
 const props = defineProps<{ ticketKey: string }>();
 
-const links = computed(() => getLinks(props.ticketKey) ?? []);
-// One pill per open linked ticket
-const entries = computed(() => (Object.keys(KINDS) as PillKind[]).flatMap(kind =>
-  openLinks(links.value, KINDS[kind].relation).map(link => ({ id: `${kind}:${link.Key}`, kind, link }))));
+// One entry per open linked ticket
+const entries = computed(() => KINDS.flatMap(def =>
+  openLinks(getLinks(props.ticketKey), def.relation).map(link => ({ id: `${def.kind}:${link.Key}`, def, link }))));
 const visibleEntries = computed(() =>
   entries.value.length <= MAX_PILLS ? entries.value : entries.value.slice(0, MAX_PILLS - 1));
 const hiddenEntries = computed(() => entries.value.slice(visibleEntries.value.length));
 
-// Which pill the tooltip belongs to: an entry id, or "overflow" for "+N more"
+// Everything rendered as a pill: the visible entries, plus "+N more" when some are hidden
+const pills = computed(() => {
+  const list = visibleEntries.value.map(e => ({
+    id: e.id, label: `${e.def.label} ${e.link.Key}`, ariaLabel: `${e.def.label} ${e.link.Key}`, color: e.def.color, italic: true,
+  }));
+  const hidden = hiddenEntries.value;
+  if (hidden.length) {
+    list.push({
+      id: OVERFLOW_ID,
+      label: `+${hidden.length} more`,
+      ariaLabel: `${hidden.length} more: ${hidden.map(e => `${e.def.label} ${e.link.Key}`).join(", ")}`,
+      color: OVERFLOW_COLOR,
+      italic: false,
+    });
+  }
+  return list;
+});
+
+// Which pill the tooltip belongs to: an entry id, or OVERFLOW_ID for "+N more"
 const activePill = ref("");
 // Uses visibleEntries (not entries): if a refresh moves the hovered pill into "+N more", this becomes
 // empty and the tooltip closes instead of staying attached to a pill that's gone.
-const tooltipEntries = computed(() => activePill.value === "overflow"
+const tooltipEntries = computed(() => activePill.value === OVERFLOW_ID
   ? hiddenEntries.value
   : visibleEntries.value.filter(e => e.id === activePill.value));
 
@@ -84,6 +96,8 @@ const tooltipStyle = ref<Record<string, string>>({ visibility: "hidden" });
 let anchor: HTMLElement | null = null;
 let openTimer: number | undefined;
 let closeTimer: number | undefined;
+
+const isActive = (pillId: string) => isOpen.value && activePill.value === pillId;
 
 const statusClass = (link: IssueLink) => ({
   "bg-secondary": link.StatusCategory === "new",
@@ -96,15 +110,14 @@ const clearTimers = () => {
   window.clearTimeout(closeTimer);
 };
 
-const open = async (target: HTMLElement) => {
-  // Skip if dragging, or if the pill was removed while the open delay ran (it would measure as 0,0)
-  if (isDragging.value || !target.isConnected) return;
+// Opens hidden; the watcher below places it once it has rendered.
+const open = (target: HTMLElement) => {
+  // Skip if dragging, if the pill was removed during the open delay, or if it's already open on this pill
+  if (isDragging.value || !target.isConnected || (isOpen.value && anchor === target)) return;
   anchor = target;
   activePill.value = target.dataset.pill ?? "";
-  tooltipStyle.value = { visibility: "hidden" }; // measure first, then place
+  tooltipStyle.value = { visibility: "hidden" };
   isOpen.value = true;
-  await nextTick();
-  position();
 };
 
 const close = () => {
@@ -116,9 +129,7 @@ const close = () => {
 const scheduleOpen = (event: MouseEvent) => {
   if (isDragging.value) return;
   const target = event.currentTarget as HTMLElement;
-  window.clearTimeout(closeTimer);
-  window.clearTimeout(openTimer);
-  if (isOpen.value && anchor === target) return;
+  clearTimers();
   openTimer = window.setTimeout(() => open(target), OPEN_DELAY_MS);
 };
 
@@ -128,8 +139,7 @@ const openNow = (event: Event) => {
 };
 
 const scheduleClose = () => {
-  window.clearTimeout(openTimer);
-  window.clearTimeout(closeTimer);
+  clearTimers();
   closeTimer = window.setTimeout(close, CLOSE_DELAY_MS);
 };
 
@@ -145,9 +155,9 @@ const position = () => {
   if (top + tip.height > window.innerHeight - EDGE_PX && pill.top - GAP_PX - tip.height >= EDGE_PX) {
     top = pill.top - GAP_PX - tip.height;
   }
-  const left = Math.min(Math.max(pill.left, EDGE_PX), window.innerWidth - tip.width - EDGE_PX);
+  const left = Math.max(EDGE_PX, Math.min(pill.left, window.innerWidth - tip.width - EDGE_PX));
 
-  tooltipStyle.value = { top: `${top}px`, left: `${Math.max(left, EDGE_PX)}px` };
+  tooltipStyle.value = { top: `${top}px`, left: `${left}px` };
 };
 
 const onKeydown = (event: KeyboardEvent) => {
@@ -177,14 +187,14 @@ watch(isDragging, (dragging) => {
   if (dragging) close();
 });
 
-// A refresh can leave the open tooltip with nothing to show (e.g. the blocker was resolved); close it properly.
-watch(tooltipEntries, async (shown) => {
-  if (!isOpen.value) return;
+// The one place the tooltip is positioned: when it opens, switches pills, or its content changes.
+// Closes it instead if there's nothing to show (blocker resolved) or its pill is gone.
+watch([isOpen, tooltipEntries], async ([opened, shown]) => {
+  if (!opened) return;
   if (shown.length === 0 || !anchor?.isConnected) {
     close();
     return;
   }
-  // Content changed while open (e.g. "+N more" grew): re-place it so it doesn't run off the screen.
   await nextTick();
   position();
 });
@@ -207,30 +217,22 @@ onBeforeUnmount(() => {
   vertical-align: middle;
 }
 
+/* --pill-color is set per pill / tooltip row from KINDS (colors live in src/assets/main.css).
+   White text holds on both: blocked 5.3:1, depends on 4.5:1. */
+.link-pill,
+.link-kind {
+  background-color: var(--pill-color);
+  color: var(--bs-white);
+}
+
 .link-pill {
   border: none;
   cursor: help;
   font-size: 0.75em;
 }
 
-/* Colors live in src/assets/main.css; both hold white text (blocked 5.3:1, depends on 4.5:1). */
-.pill-blocked {
-  background-color: var(--jcv-blocked);
-  color: #fff;
-}
-
-.pill-depends-on {
-  background-color: var(--jcv-depends-on);
-  color: #fff;
-}
-
-.pill-overflow {
-  background-color: #495057;
-  color: #fff;
-}
-
 .link-pill:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--bs-white);
   outline-offset: 1px;
 }
 
@@ -242,9 +244,9 @@ onBeforeUnmount(() => {
   max-height: 50vh;
   overflow-y: auto;
   padding: 0.5rem 0.6rem;
-  background: #212529;
-  color: #dee2e6;
-  border: 1px solid #6c757d;
+  background: var(--bs-dark);
+  color: var(--bs-gray-300);
+  border: 1px solid var(--bs-gray-600);
   border-radius: 0.375rem;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
   font-size: 0.85rem;
@@ -253,22 +255,14 @@ onBeforeUnmount(() => {
 /* Each ticket in its own box, with a left edge in its pill color */
 .link-row {
   padding: 0.45rem 0.6rem;
-  background: #2b3035;
-  border: 1px solid #495057;
-  border-left-width: 4px;
+  background: var(--jcv-tooltip-row-bg);
+  border: 1px solid var(--bs-gray-700);
+  border-left: 4px solid var(--pill-color);
   border-radius: 0.375rem;
 }
 
 .link-row + .link-row {
   margin-top: 0.5rem;
-}
-
-.link-row.kind-blocked {
-  border-left-color: var(--jcv-blocked);
-}
-
-.link-row.kind-dependsOn {
-  border-left-color: var(--jcv-depends-on);
 }
 
 .link-summary {
@@ -277,7 +271,7 @@ onBeforeUnmount(() => {
 
 .link-divider {
   margin: 0.3rem 0;
-  border-color: #6c757d;
+  border-color: var(--bs-gray-600);
   opacity: 0.5;
 }
 </style>

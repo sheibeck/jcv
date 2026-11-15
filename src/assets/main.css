@@ -1,7 +1,8 @@
 @import './base.css';
 
-/* Blocked / Depends on pill colors (IssueLinkChips.vue) */
+/* Blocker / dependency pill and tooltip colors (IssueLinkPills.vue) */
 :root {
   --jcv-blocked: #D41717;
-  --jcv-depends-on: #0d6efd; /* Bootstrap link blue, same as the Jira / branch link icons */
+  --jcv-depends-on: var(--bs-primary); /* Bootstrap link blue, same as the Jira / branch link icons */
+  --jcv-tooltip-row-bg: #2b3035; /* no Bootstrap 5.1 variable for this shade */
 }

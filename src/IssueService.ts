@@ -1,23 +1,24 @@
 import { JiraTicket } from "./JiraTicket";
 import { fetchSettings, type UserSettings } from "./UserSettings";
-import { parseIssueLinks, setLinks, type IssueLink } from "./IssueLinks";
+import { parseIssueLinks, type IssueLink } from "./IssueLinks";
+import { JIRA_BASE_URL } from "./Utils";
 
 // running a custom cors proxy on heroku.
 const CORS_PROXY = 'https://jvc-cors-proxy-7bc908c62bc1.herokuapp.com/';
-const JIRA_BASE = 'https://dealeron.atlassian.net';
 // Link lookups for versioned tickets run this many requests at a time.
 const LINK_FETCH_CONCURRENCY = 6;
 
 /** A failed Jira request; `status` is the HTTP status (0 = network/CORS failure). */
 export class JiraRequestError extends Error {
     constructor(public readonly status: number, url: string) {
-        super(`Error: ${status} for endpoint ${url}`);
+        super(`Jira request failed (${status}): ${url}`);
+        this.name = "JiraRequestError";
     }
 }
 
 export class IssueService {
     private getJiraUrl(boardNumber: string, status: string = "Integrating"): string {
-        const url = `${JIRA_BASE}/rest/agile/1.0/board/${boardNumber}/issue?jql=status%20=%20%27${status}%27`;
+        const url = `${JIRA_BASE_URL}/rest/agile/1.0/board/${boardNumber}/issue?jql=status%20=%20%27${status}%27`;
         return url;
     }
 
@@ -30,16 +31,13 @@ export class IssueService {
     }
 
     // GET only: through the proxy, Jira rejects browser POSTs with "XSRF check failed".
-    private request(jiraUrl: string, extraHeaders: Record<string, string> = {}): Promise<any> {
+    private request(jiraUrl: string): Promise<any> {
         return new Promise((resolve, reject) => {
             const url = CORS_PROXY + jiraUrl;
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.setRequestHeader("Authorization", `Basic ${this.getJiraToken()}`);
             xhr.setRequestHeader("Content-Type", "application/json");
-            for (const [name, value] of Object.entries(extraHeaders)) {
-                xhr.setRequestHeader(name, value);
-            }
             xhr.onload = () => {
                 if (xhr.status === 200) {
                     const responseRaw: string = xhr.response;
@@ -68,17 +66,20 @@ export class IssueService {
     }
 
     private fetchIssues(boardNumber: string, status: string): any {
-        return this.request(this.getJiraUrl(boardNumber, status), {
-            'Access-Control-Allow-Origin': '*',
-            "Access-Control-Allow-Methods": "OPTIONS, GET",
-        });
+        return this.request(this.getJiraUrl(boardNumber, status));
     }
 
-    async GetIssues(boardNumber: string, status: string): Promise<JiraTicket[]> {
+    /**
+     * Sub-tasks on the board with the given status, plus each one's blocker/dependency links.
+     * Links are returned separately (not on the ticket) so they're never saved to Cosmos;
+     * a ticket is only in `links` when Jira actually returned the field.
+     */
+    async GetIssues(boardNumber: string, status: string): Promise<{ tickets: JiraTicket[]; links: Map<string, IssueLink[]> }> {
 
         const jiraIssues = await this.fetchIssues(boardNumber, status);
 
         const issueList = new Array<JiraTicket>();
+        const links = new Map<string, IssueLink[]>();
 
         jiraIssues.issues.forEach( (issue: any) => {
             const ticketNumber = issue.key;
@@ -94,14 +95,12 @@ export class IssueService {
             const ticket = new JiraTicket(ticketNumber, codeBase, priorityText, isPbi, isSev, issueType, summary, labels, team);
             issueList.push(ticket);
 
-            // Links live in the in-memory store, not on the ticket, so they're never saved to Cosmos.
-            // Only record them when Jira actually returned the field; otherwise leave them "not loaded".
             if (Array.isArray(issue.fields.issuelinks)) {
-                setLinks(ticketNumber, parseIssueLinks(issue.fields.issuelinks));
+                links.set(ticketNumber, parseIssueLinks(issue.fields.issuelinks));
             }
         });
 
-        return issueList;
+        return { tickets: issueList, links };
     }
 
     /**
@@ -128,7 +127,7 @@ export class IssueService {
                 }
                 const key = keys[next++];
                 try {
-                    const issue = await this.request(`${JIRA_BASE}/rest/api/3/issue/${encodeURIComponent(key)}?fields=issuelinks`);
+                    const issue = await this.request(`${JIRA_BASE_URL}/rest/api/3/issue/${encodeURIComponent(key)}?fields=issuelinks`);
                     if (Array.isArray(issue?.fields?.issuelinks)) {
                         result.set(key, parseIssueLinks(issue.fields.issuelinks));
                     }

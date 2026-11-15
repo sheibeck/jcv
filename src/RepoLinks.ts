@@ -15,7 +15,7 @@ const ADO_ORG_URL = "https://dev.azure.com/dealeron";
 
 const PROJECT_EXCEPTIONS: Record<string, string> = {
     // ARCH
-    BLOGSAA: "ARCH", LDATSHA: "ARCH", DOCSOTA: "ARCH",
+    BLOGSAA: "ARCH", LDATSHA: "ARCH", DOCSOTA: "ARCH", ARCSHA: "ARCH",
     TMPTBAA: "ARCH", TMPTBAB: "ARCH", TMPTCPY: "ARCH", TMPTIAB: "ARCH",
     TMPTMSG: "ARCH", TMPTOTA: "ARCH", TMPTSAA: "ARCH", TMPTSHA: "ARCH",
     // SITE
@@ -23,14 +23,12 @@ const PROJECT_EXCEPTIONS: Record<string, string> = {
     // LEAD
     DLVRBAA: "LEAD", DLVRIAA: "LEAD",
     // INV
-    PRLGBAA: "INV", PRLGIAA: "INV", PRLGSHA: "INV", INVTOTA: "INV",
+    PRLGBAA: "INV", PRLGIAA: "INV", PRLGSHA: "INV", INVTOTA: "INV", INVSHA: "INV",
     // Others
     COFOBAA: "FORM",
     BAMSBAA: "BANR",
     OEMPBAA: "OEMS",
     INFEXPT: "RPRT",
-    ARCSHA: "ARCH",
-    INVSHA: "INV",
 };
 
 /** Azure DevOps project that holds a codebase's repo. */

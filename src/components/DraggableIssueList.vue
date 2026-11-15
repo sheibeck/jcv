@@ -16,7 +16,7 @@
                 <i v-if="element.IsPbi" title="pbi" class="badge bg-secondary small ms-1">pbi</i>
                 <i v-if="element.IsSev" :title="element.Priority" class="badge bg-danger small ms-1">sev</i>
                 <i v-if="isRegression(element)" title="Regression sub-task" class="badge bg-warning text-dark small ms-1">regression</i>
-                <IssueLinkChips :ticket-key="element.Number"></IssueLinkChips>
+                <IssueLinkPills :ticket-key="element.Number"></IssueLinkPills>
             </div>
             <span v-if="hasValue(element.Team)" class="badge bg-info text-dark">{{ element.Team }}</span>
             <small>{{ element.Summary }}</small>
@@ -34,8 +34,8 @@ import draggable from 'vuedraggable';
 import type { JiraTicket } from '@/JiraTicket';
 import { isRegression, hasValue } from '@/Utils';
 import { getIssueUrl } from '@/Utils';
-import { isDragging } from '@/IssueLinks';
-import IssueLinkChips from './IssueLinkChips.vue';
+import { isDragging } from '@/DragState';
+import IssueLinkPills from './IssueLinkPills.vue';
 
 const props = defineProps<{
     handler: any;

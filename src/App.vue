@@ -222,7 +222,8 @@ const getIssues = async function () {
 
   component.value.CodeBases = new Array<CodeBase>();
 
-  const issueList: any = await issueService.GetIssues(getBoardNumber.value, subTaskStatus.value);
+  const { tickets: issueList, links } = await issueService.GetIssues(getBoardNumber.value, subTaskStatus.value);
+  links.forEach((ticketLinks, key) => setLinks(key, ticketLinks));
 
   //put issues into code bases
   issueList.forEach((issue: any) => {
