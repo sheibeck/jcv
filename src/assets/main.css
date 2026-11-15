@@ -4,5 +4,6 @@
 :root {
   --jcv-blocked: #D41717;
   --jcv-depends-on: var(--bs-primary); /* Bootstrap link blue, same as the Jira / branch link icons */
+  --jcv-overflow: var(--bs-gray-700); /* "+N more" pill */
   --jcv-tooltip-row-bg: #2b3035; /* no Bootstrap 5.1 variable for this shade */
 }

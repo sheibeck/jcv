@@ -5,14 +5,14 @@
       :data-pill="pill.id"
       :aria-expanded="isActive(pill.id)" :aria-controls="isActive(pill.id) ? tooltipId : undefined"
       :aria-label="pill.ariaLabel"
-      @mouseenter="scheduleOpen" @mouseleave="scheduleClose" @focus="openNow" @blur="scheduleClose" @click="openNow">
+      @mouseenter="scheduleOpen" @mouseleave="scheduleClose" @focus="openNow" @blur="onFocusLost" @click="openNow">
       {{ pill.label }}
     </button>
 
     <Teleport to="body">
       <div v-if="isOpen && tooltipEntries.length" :id="tooltipId" ref="tooltipEl" class="link-tooltip" role="region"
         :aria-label="`Tickets ${ticketKey} is waiting on`" :style="tooltipStyle"
-        @mouseenter="cancelClose" @mouseleave="scheduleClose" @focusin="cancelClose" @focusout="scheduleClose">
+        @mouseenter="onTooltipEnter" @mouseleave="onTooltipLeave" @focusin="cancelClose" @focusout="onFocusLost">
         <div v-for="entry in tooltipEntries" :key="entry.id" class="link-row" :style="{ '--pill-color': entry.def.color }">
           <div class="d-flex align-items-center gap-2">
             <span class="badge link-kind fst-italic">{{ entry.def.label }}</span>
@@ -44,7 +44,7 @@ const EDGE_PX = 8;
 // blockers can't stretch the card; the "+N more" tooltip lists the rest.
 const MAX_PILLS = 3;
 const OVERFLOW_ID = "overflow";
-const OVERFLOW_COLOR = "var(--bs-gray-700)";
+const OVERFLOW_COLOR = "var(--jcv-overflow)";
 
 interface KindDef { kind: string; relation: LinkRelation; label: string; color: string }
 // In display order: blockers before dependencies, so "+N more" hides dependencies first.
@@ -96,6 +96,9 @@ const tooltipStyle = ref<Record<string, string>>({ visibility: "hidden" });
 let anchor: HTMLElement | null = null;
 let openTimer: number | undefined;
 let closeTimer: number | undefined;
+// While the pointer is over the tooltip, losing focus (e.g. clicking its text after clicking the pill)
+// must not close it; only the pointer leaving it, Esc, scroll or resize should.
+let pointerInTooltip = false;
 
 const isActive = (pillId: string) => isOpen.value && activePill.value === pillId;
 
@@ -124,6 +127,7 @@ const close = () => {
   clearTimers();
   isOpen.value = false;
   anchor = null;
+  pointerInTooltip = false;
 };
 
 const scheduleOpen = (event: MouseEvent) => {
@@ -144,6 +148,21 @@ const scheduleClose = () => {
 };
 
 const cancelClose = () => window.clearTimeout(closeTimer);
+
+const onTooltipEnter = () => {
+  pointerInTooltip = true;
+  cancelClose();
+};
+
+const onTooltipLeave = () => {
+  pointerInTooltip = false;
+  scheduleClose();
+};
+
+// Pill blur / tooltip focusout: close unless the pointer is in the tooltip (the user is clicking inside it)
+const onFocusLost = () => {
+  if (!pointerInTooltip) scheduleClose();
+};
 
 // Below the pill, flipped above when it would run off the bottom; clamped horizontally.
 const position = () => {
@@ -238,6 +257,7 @@ onBeforeUnmount(() => {
 
 .link-tooltip {
   position: fixed;
+  /* Below Bootstrap 5.1's modal backdrop (1050) and modals (1055), so it never covers the Settings / Report dialogs */
   z-index: 1040;
   width: 360px;
   max-width: calc(100vw - 16px);
@@ -269,9 +289,9 @@ onBeforeUnmount(() => {
   overflow-wrap: anywhere;
 }
 
+/* Bootstrap draws <hr> in the text color (background: currentColor), so opacity sets how strong it is */
 .link-divider {
   margin: 0.3rem 0;
-  border-color: var(--bs-gray-600);
   opacity: 0.5;
 }
 </style>

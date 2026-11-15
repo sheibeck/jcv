@@ -118,6 +118,7 @@ export class IssueService {
         const result = new Map<string, IssueLink[]>();
         let next = 0;
         let stopped = false; // set on failure or cancel, so every worker stops taking new tickets
+        let missingCount = 0;
 
         const worker = async () => {
             while (!stopped && next < keys.length) {
@@ -138,11 +139,17 @@ export class IssueService {
                         stopped = true;
                         throw error;
                     }
+                    missingCount++;
                 }
             }
         };
 
         await Promise.all(Array.from({ length: Math.min(LINK_FETCH_CONCURRENCY, keys.length) }, worker));
+
+        // Every ticket "missing" almost never means they were all deleted; it usually means the proxy or URL is wrong.
+        if (!stopped && keys.length > 0 && missingCount === keys.length) {
+            console.warn(`All ${keys.length} versioned tickets returned 404 from Jira. Check the CORS proxy and Jira URL; pills for versioned tickets are cleared.`);
+        }
         return result;
     }
 }

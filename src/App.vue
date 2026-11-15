@@ -243,8 +243,10 @@ const refreshButtonHandler = async () => {
   // Also refresh blocker/dependency pills on tickets inside versions, so "refresh" means everything is current.
   // Not awaited (same as fetchAllVersions): the spinner and toast follow the sub-task fetch, and version
   // pills update when Jira answers. A newer refresh cancels the remaining requests of an older one.
+  // The board fetch is started first so its request goes out ahead of the six link requests.
+  const issues = getIssues();
   refreshVersionLinks();
-  await getIssues();
+  await issues;
   sendMessage("Refreshed sub-tasks from Jira.");
 }
 
