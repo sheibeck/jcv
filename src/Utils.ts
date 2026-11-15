@@ -8,6 +8,8 @@ export function hasValue(value: string | undefined | null): boolean {
     return value != null && value.length > 0;
 }
   
+export const JIRA_BASE_URL = "https://dealeron.atlassian.net";
+
 export const getIssueUrl = (issueNumber: string) => {
-    return `https://dealeron.atlassian.net/browse/${issueNumber}`;
+    return `${JIRA_BASE_URL}/browse/${issueNumber}`;
 }

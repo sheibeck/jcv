@@ -43,7 +43,7 @@
         <div v-else v-for="codebase in component.CodeBases" v-bind:key="codebase.Name" class="card p-1 bg-dark">
           <span class="h4 border-bottom">
             {{ codebase.Name }}
-            <a :href="getCodeBaseRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i
+            <a :href="getRepoUrl(codebase.Name)" target="_blank" :title="`${codebase.Name} Repository`"><i
                 class="fas"></i></a>
           </span>
           <DraggableIssueList :handler="issueListChanged" :issues="codebase.Issues" :repo-name="codebase.Name"
@@ -171,6 +171,8 @@ import ActionButtons from "./components/Actionbuttons.vue";
 import { sendMessage } from "@/UserMessageService";
 import { hasValue } from "@/Utils";
 import Report from "@/components/Report.vue";
+import { deleteLinks, setLinks } from "@/IssueLinks";
+import { getRepoUrl } from "@/RepoLinks";
 
 const settings = ref<UserSettings>(new UserSettings());
 const component = ref();
@@ -215,14 +217,13 @@ const getBoardDisplayName = computed(() => {
   return settings.value ? `${settings.value.TeamName} - Integration` : "No Board Selected";
 });
 
-const getCodeBaseRepoUrl = (repoName: string) => `https://dev.azure.com/dealeron/C2C/_git/${repoName}/branches`;
-
 const getIssues = async function () {
   isLoadingJira.value = true;
 
   component.value.CodeBases = new Array<CodeBase>();
 
-  const issueList: any = await issueService.GetIssues(getBoardNumber.value, subTaskStatus.value);
+  const { tickets: issueList, links } = await issueService.GetIssues(getBoardNumber.value, subTaskStatus.value);
+  links.forEach((ticketLinks, key) => setLinks(key, ticketLinks));
 
   //put issues into code bases
   issueList.forEach((issue: any) => {
@@ -239,7 +240,13 @@ const getIssues = async function () {
 }
 
 const refreshButtonHandler = async () => {
-  await getIssues();
+  // Also refresh blocker/dependency pills on tickets inside versions, so "refresh" means everything is current.
+  // Not awaited (same as fetchAllVersions): the spinner and toast follow the sub-task fetch, and version
+  // pills update when Jira answers. A newer refresh cancels the remaining requests of an older one.
+  // The board fetch is started first so its request goes out ahead of the six link requests.
+  const issues = getIssues();
+  refreshVersionLinks();
+  await issues;
   sendMessage("Refreshed sub-tasks from Jira.");
 }
 
@@ -356,6 +363,39 @@ const fetchAllVersions = async () => {
   handleVersionedIssues();
 
   isLoadingVersions.value = false;
+
+  // Not awaited: versions show right away and link pills appear once Jira answers.
+  refreshVersionLinks();
+}
+
+// Blocker/dependency links for tickets inside versions. The ticket snapshots in Cosmos are
+// frozen, so the links are always re-read live from Jira and kept only in memory.
+let versionLinksRequest = 0;
+const refreshVersionLinks = async () => {
+  const requestId = ++versionLinksRequest;
+  const keys = versions.value.flatMap(v => v.Issues.map(i => i.Number));
+
+  if (keys.length === 0) return;
+
+  try {
+    // Stops sending requests as soon as a newer refresh starts
+    const links = await issueService.GetIssueLinks(keys, () => requestId === versionLinksRequest);
+    if (requestId !== versionLinksRequest) return; // a newer refresh has started
+
+    // Tickets Jira didn't return (deleted, moved, no access) lose their pills rather than keep stale ones.
+    keys.forEach(key => {
+      const ticketLinks = links.get(key);
+      if (ticketLinks) setLinks(key, ticketLinks);
+      else deleteLinks(key);
+    });
+  }
+  catch (error) {
+    if (requestId !== versionLinksRequest) return;
+
+    console.error("Could not load link status for versioned tickets.", error);
+    // Show no pills rather than possibly stale ones.
+    keys.forEach(key => deleteLinks(key));
+  }
 }
 
 async function fetchVersionsAndIssues() {
